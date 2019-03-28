@@ -1,0 +1,21 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+</head>
+
+<h1>basti ist <span id="bla" style="color: green">kein kek</span></h1>
+<button id="button">was ist basti</button>
+<script>
+$(document).ready(function(){
+    document.getElementById("button").onclick = function() {
+        $.get({
+            url: "/wasIstBasti",
+            success: function(response) {
+                document.getElementById("bla").innerHTML = response;
+            }
+        })
+    };
+});
+
+</script>
+</html>
