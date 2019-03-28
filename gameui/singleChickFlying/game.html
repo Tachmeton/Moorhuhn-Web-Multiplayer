@@ -1,0 +1,91 @@
+<html>
+<head>
+    <script type="text/javascipt" src ="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascipt" src ="game.js"></script>
+    <style>
+        body{
+            padding:5%;
+        }
+
+        canvas{
+            border:1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="game" width=600 height=300></canvas>
+    <button id="start">Start Game</button>
+    <script>
+        console.log("hi");
+        const fps = 30;
+        let xSpeed = 0;
+        let ySpeed = 0;
+        const c = document.getElementById("game");
+        const ctx = c.getContext("2d");
+        let x = 50;
+        let y = 50;
+        const xMax = c.width;
+        const yMax = c.height;
+        
+        const pic = new Image();
+        pic.src = "img/copyrightChick.png";
+
+        
+        const picReverse = new Image();
+        picReverse.src = "img/copyrightChickReverse.png";
+
+        document.getElementById("start").onclick = startGame;
+
+        function startGame() {
+            setInterval(gameLoop, 1000/fps);
+        }
+        
+        function gameLoop() {
+            console.log("drawing some mad shit");
+            ctx.clearRect(0,0, xMax, yMax);
+            
+            x += xSpeed;
+            y += ySpeed;
+
+            x = (x < 0) ? 0: x;
+            x = (x > xMax) ? xMax: x;
+
+            y = (y < 0) ? 0: y;
+            y = (y > yMax) ? yMax: y;
+
+            if(xSpeed >= 0) {
+                ctx.drawImage(picReverse, x, y);
+            } else {
+                ctx.drawImage(pic, x, y);
+            }
+
+            /*ctx.beginPath();
+            ctx.arc(x+x-Speed,y+ySpeed, 15, 0, 2 * Math.PI);
+            ctx.stroke();*/
+        }
+
+        document.onkeydown = controlSpeed;
+
+        function controlSpeed(e) {
+            e = e || window.event;
+
+            if (e.keyCode == '38') { // up key
+                xSpeed = 0;
+                ySpeed = -5;
+            }
+            else if (e.keyCode == '40') { // down key
+                xSpeed = 0;
+                ySpeed = 5;
+            }
+            else if (e.keyCode == '37') { // left key
+                ySpeed = 0;
+                xSpeed = -5;
+            }
+            else if (e.keyCode == '39') { // right key
+                ySpeed = 0;
+                xSpeed = 5;
+            }
+        }
+    </script>
+</body>
+</html>
