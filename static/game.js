@@ -76,19 +76,15 @@ $(document).ready(function() {
                 switch (true) {
                     case (random < 0.25):
                         chicks[i].direction = 'n';
-                        console.log("i now goes north");
                         break;
                     case (random < 0.5):
                         chicks[i].direction = 'e';
-                        console.log("i now goes east");
                         break;
                     case (random < 0.75):
                         chicks[i].direction = 's';
-                        console.log("i now goes south");
                         break;
                     default:
                         chicks[i].direction = 'w';
-                        console.log("i now goes west");
                 }
             }
         }
@@ -104,7 +100,7 @@ $(document).ready(function() {
                     break;
                 case 'e':
                     chicks[i].x += xSpeed;
-                    chicks[i].x = (chicks[i].x > yMax) ? yMax: chicks[i].x;
+                    chicks[i].x = (chicks[i].x > xMax) ? xMax: chicks[i].x;
                   break;
                 case 's':
                     chicks[i].y += ySpeed;
