@@ -2,10 +2,10 @@ const express = require("express");
 
 const app = express();
 
-app.listen(3000);
+app.use(express.static("static"));
 
 app.get("/", function(req, res) {
-    res.sendFile(__dirname + "/gameui/index.html");
+    res.sendFile(__dirname + "/index.html");
 });
 
 app.get("/wasIstBasti", function(req, res) {
@@ -20,7 +20,5 @@ app.delete("/asldew", function() {
 
 });
 
-function getGames() {
-    // Datenbankverbindung aufbauen
 
-}
+app.listen(3000);

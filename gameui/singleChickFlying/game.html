@@ -26,12 +26,10 @@
         let y = 50;
         const xMax = c.width;
         const yMax = c.height;
-        
-        const pic = new Image();
-        pic.src = "img/copyrightChick.png";
 
-        
+        const pic = new Image();
         const picReverse = new Image();
+        pic.src = "img/copyrightChick.png";
         picReverse.src = "img/copyrightChickReverse.png";
 
         document.getElementById("start").onclick = startGame;
@@ -39,11 +37,11 @@
         function startGame() {
             setInterval(gameLoop, 1000/fps);
         }
-        
+
         function gameLoop() {
             console.log("drawing some mad shit");
             ctx.clearRect(0,0, xMax, yMax);
-            
+
             x += xSpeed;
             y += ySpeed;
 
