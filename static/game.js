@@ -96,7 +96,7 @@ $(document).ready(function() {
         }
 
         if(TEST_MODE) {
-            chicks[0].direction = direction;
+            chicks[myChick].direction = direction;
         }
     }
 
@@ -134,7 +134,11 @@ $(document).ready(function() {
     }
 
     function updateDirections(chicks) {
-        for(let i = 1; i < chicks.length; i++) {
+        for(let i = 0; i < chicks.length; i++) {
+            if(i === myChick) {
+                continue;
+            }
+
             const random = Math.random();
             if(Math.round(random * 100) % 15 == 1) {
                 switch (true) {
@@ -182,17 +186,19 @@ $(document).ready(function() {
 
     function drawChicks(ctx, chicks){
 
-        if(chicks[0].direction === 'e') {
-            ctx.drawImage(picReverseMe, chicks[0].x, chicks[0].y);
-        } else {
-            ctx.drawImage(picMe, chicks[0].x, chicks[0].y);
-        }
-
-        for(let i = 1; i < chicks.length; i++) {
+        for(let i = 0; i < chicks.length; i++) {            
             if(chicks[i].direction === 'e') {
-                ctx.drawImage(picReverse, chicks[i].x, chicks[i].y);
+                if(i === myChick) {
+                    ctx.drawImage(picReverseMe, chicks[i].x, chicks[i].y);
+                } else {
+                    ctx.drawImage(picReverse, chicks[i].x, chicks[i].y);
+                }
             } else {
-                ctx.drawImage(pic, chicks[i].x, chicks[i].y);
+                if(i === myChick) {
+                    ctx.drawImage(picMe, chicks[i].x, chicks[i].y);
+                } else {
+                    ctx.drawImage(pic, chicks[i].x, chicks[i].y);
+                }
             }
         }
     }
