@@ -1,5 +1,8 @@
 /* eslint-disable no-undef */
 /* eslint-disable */
+
+const TEST_MODE = true;
+
 $(document).ready(function() {
     console.log("game.js loaded");
 
@@ -29,9 +32,13 @@ $(document).ready(function() {
     const xSpeed = 5;
     const ySpeed = 2;
     let pic = new Image();
+    let picMe = new Image();
     let picReverse = new Image();
+    let picReverseMe = new Image();
     pic.src = "img/copyrightChick.png";
+    picMe.src = "img/copyrightChickGreen.png";
     picReverse.src = "img/copyrightChickReverse.png";
+    picReverseMe.src = "img/copyrightChickReverseGreen.png";
 
     // make socket connection
     const socket = io('http://localhost');
@@ -80,12 +87,16 @@ $(document).ready(function() {
 
         // only emit to server if direction changed
         if(chicks[myChick].direction != direction) {
-            io.emit('chickInput', {
+            socket.emit('chickInput', {
                 id:chicks[myChick].id,
                 x:chicks[myChick].x,
                 y:chicks[myChick].y,
                 direction:direction
             });
+        }
+
+        if(TEST_MODE) {
+            chicks[0].direction = direction;
         }
     }
 
@@ -96,7 +107,7 @@ $(document).ready(function() {
         var canvasPosX = event.clientX - rect.left;
         var canvasPosY = event.clientY - rect.top;
 
-        io.emit('hunterShot', {
+        socket.emit('hunterShot', {
             x: canvasPosX,
             y: canvasPosY
         });
@@ -170,7 +181,14 @@ $(document).ready(function() {
     }
 
     function drawChicks(ctx, chicks){
-        for(let i = 0; i < chicks.length; i++) {
+
+        if(chicks[0].direction === 'e') {
+            ctx.drawImage(picReverseMe, chicks[0].x, chicks[0].y);
+        } else {
+            ctx.drawImage(picMe, chicks[0].x, chicks[0].y);
+        }
+
+        for(let i = 1; i < chicks.length; i++) {
             if(chicks[i].direction === 'e') {
                 ctx.drawImage(picReverse, chicks[i].x, chicks[i].y);
             } else {
