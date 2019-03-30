@@ -1,0 +1,32 @@
+{
+  "name": "moorhuhn-web-multiplayer",
+  "version": "0.0.1",
+  "description": "Multiplayer online game",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Frranz/Moorhuhn-Web-Multiplayer.git"
+  },
+  "keywords": [
+    "html5",
+    "angular",
+    "node",
+    "socket.io",
+    "game",
+    "multiplayer",
+    "realtime"
+  ],
+  "author": "3 respectable guys from my course + Franz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Frranz/Moorhuhn-Web-Multiplayer/issues"
+  },
+  "homepage": "https://github.com/Frranz/Moorhuhn-Web-Multiplayer#readme",
+  "dependencies": {
+    "socket.io": "^2.2.0"
+  }
+}

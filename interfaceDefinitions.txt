@@ -1,0 +1,27 @@
+socketio:
+
+'updateChick': // sent from server
+single chick object
+    -id
+    -x
+    -y
+    -direction
+
+'syncChicks': // sent from server
+array of all chicks with following attributes
+    -id
+    -x
+    -y
+    -direction
+
+'chickInput': // sent from client   note: server should not rely on sent id here
+single chick object
+    -id
+    -x
+    -y
+    -direction
+
+'hunterShot': // sent from client
+coordinates of shot on canvas
+    -x
+    -y
