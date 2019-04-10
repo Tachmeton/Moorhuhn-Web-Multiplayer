@@ -5,7 +5,7 @@ const TEST_MODE = true;
 const COUNTDOWN_TIME = 5;
 const REFRESH_RATE = 30;
 const xSpeed = 5;
-const ySpeed = 2;
+const ySpeed = 20;
 const myChick = 1;
 
 const picLeft = new Image();
@@ -16,6 +16,10 @@ const picDown = new Image();
 const picDownMe = new Image();
 const picRight = new Image();
 const picRightMe = new Image();
+
+picDown.onload = function(e) {
+    console.log("pic down loaded" + e);
+};
 picLeft.src = "img/copyrightChick.png";
 picLeftMe.src = "img/copyrightChickGreen.png";
 picUp.src = "img/copyrightChickUp.png";

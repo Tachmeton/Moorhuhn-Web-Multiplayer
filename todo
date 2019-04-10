@@ -8,4 +8,4 @@ stuff todo:
     -add magazine for shooter
     -add something like a score on top left
     -chicken animation?
-
+    -ctx.globalAlpha = 0.4; for opacity change on dieing chicken :(
