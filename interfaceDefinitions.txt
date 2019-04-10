@@ -24,6 +24,11 @@ array of all chicks with following attributes
     -y
     -direction
 
+'killReviveChicken': // sent from server
+chicken object with attributes
+    -id
+    -alive           // alive=false means chicken is dead
+
 'chickInput': // sent from client   note: server should not rely on sent id here
 single chick object
     -id
@@ -35,3 +40,4 @@ single chick object
 coordinates of shot on canvas
     -x
     -y
+

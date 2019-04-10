@@ -80,6 +80,10 @@ $(document).ready(function() {
         chicks[chicken.id] = chicken;
     });
 
+    socket.on('killReviveChick', function(chicken) {
+        chicks[chicken.id].alive = chicken.alive;
+    });
+
     socket.on('disconnect', function() {
         console.log("socket connection was closed");
     });
