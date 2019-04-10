@@ -8,14 +8,22 @@ const xSpeed = 5;
 const ySpeed = 2;
 const myChick = 1;
 
-const pic = new Image();
-const picMe = new Image();
-const picReverse = new Image();
-const picReverseMe = new Image();
-pic.src = "img/copyrightChick.png";
-picMe.src = "img/copyrightChickGreen.png";
-picReverse.src = "img/copyrightChickReverse.png";
-picReverseMe.src = "img/copyrightChickReverseGreen.png";
+const picLeft = new Image();
+const picLeftMe = new Image();
+const picUp = new Image();
+const picUpMe = new Image();
+const picDown = new Image();
+const picDownMe = new Image();
+const picRight = new Image();
+const picRightMe = new Image();
+picLeft.src = "img/copyrightChick.png";
+picLeftMe.src = "img/copyrightChickGreen.png";
+picUp.src = "img/copyrightChickUp.png";
+picUpMe.src = "img/copyrightChickUpMe.png";
+picDown.src = "img/copyrightChickDown.png";
+picDownMe.src = "img/copyrightChickDownMe.png";
+picRight.src = "img/copyrightChickReverse.png";
+picRightMe.src = "img/copyrightChickReverseGreen.png";
 
 $(document).ready(function() {
     console.log("game.js loaded");
@@ -236,15 +244,27 @@ class Gameboard {
         for(let i = 0; i < this.chicks.length; i++) {
             if(this.chicks[i].direction === 'e') {
                 if(i === myChick) {
-                    this.ctx.drawImage(picReverseMe, this.chicks[i].x, this.chicks[i].y);
+                    this.ctx.drawImage(picRightMe, this.chicks[i].x, this.chicks[i].y);
                 } else {
-                    this.ctx.drawImage(picReverse, this.chicks[i].x, this.chicks[i].y);
+                    this.ctx.drawImage(picRight, this.chicks[i].x, this.chicks[i].y);
                 }
-            } else {
+            } else if(this.chicks[i].direction === 'w'){
                 if(i === myChick) {
-                    this.ctx.drawImage(picMe, this.chicks[i].x, this.chicks[i].y);
+                    this.ctx.drawImage(picLeftMe, this.chicks[i].x, this.chicks[i].y);
                 } else {
-                    this.ctx.drawImage(pic, this.chicks[i].x, this.chicks[i].y);
+                    this.ctx.drawImage(picLeft, this.chicks[i].x, this.chicks[i].y);
+                }
+            }else if(this.chicks[i].direction === 'n'){
+                if(i === myChick) {
+                    this.ctx.drawImage(picUpMe, this.chicks[i].x, this.chicks[i].y);
+                } else {
+                    this.ctx.drawImage(picUp, this.chicks[i].x, this.chicks[i].y);
+                }
+            }else{
+                if(i === myChick) {
+                    this.ctx.drawImage(picDownMe, this.chicks[i].x, this.chicks[i].y);
+                } else {
+                    this.ctx.drawImage(picDown, this.chicks[i].x, this.chicks[i].y);
                 }
             }
         }
