@@ -1,5 +1,15 @@
 socketio:
 
+'startingSoon': // sent from server when lobby is full (countdown 5 seconds)
+    empty
+
+'startingNow': // sent from server
+array of chicks
+    -id
+    -x
+    -y
+    -direction
+
 'updateChick': // sent from server
 single chick object
     -id

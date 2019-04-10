@@ -2,13 +2,27 @@
 /* eslint-disable */
 
 const TEST_MODE = true;
+const COUNTDOWN_TIME = 5;
+const REFRESH_RATE = 30;
+const xSpeed = 5;
+const ySpeed = 2;
+const myChick = 1;
+
+const pic = new Image();
+const picMe = new Image();
+const picReverse = new Image();
+const picReverseMe = new Image();
+pic.src = "img/copyrightChick.png";
+picMe.src = "img/copyrightChickGreen.png";
+picReverse.src = "img/copyrightChickReverse.png";
+picReverseMe.src = "img/copyrightChickReverseGreen.png";
 
 $(document).ready(function() {
     console.log("game.js loaded");
 
-    $("#start").click(startGame);
-
     const c = document.getElementById("game");
+
+    const game = new Gameboard(c);
 
     // initialize necessary global variables
     let chicks = [
@@ -28,17 +42,16 @@ $(document).ready(function() {
             direction: 'w'
         }
     ];
-    let myChick = 1;
-    const xSpeed = 5;
-    const ySpeed = 2;
-    let pic = new Image();
-    let picMe = new Image();
-    let picReverse = new Image();
-    let picReverseMe = new Image();
-    pic.src = "img/copyrightChick.png";
-    picMe.src = "img/copyrightChickGreen.png";
-    picReverse.src = "img/copyrightChickReverse.png";
-    picReverseMe.src = "img/copyrightChickReverseGreen.png";
+
+
+    // register mouse click
+//    document.getElementById("game").onclick = sendHunterShot;
+    document.getElementById("countdown").onclick = function(){console.log("countdown clicked");game.startCountdown(COUNTDOWN_TIME)};
+    document.getElementById("start").onclick = function(){game.startGame(chicks)};
+
+
+    // register keypresses
+    document.onkeydown = sendChickControl;
 
     // make socket connection
     const socket = io('http://localhost');
@@ -51,6 +64,15 @@ $(document).ready(function() {
         console.log("error @ establishing socket connection: " + message);
     });
 
+    socket.on('startingSoon', function() {
+        startCountdown(countDownTime);
+    });
+
+    socket.on('startingNow', function(chickArray) {
+        chicks = chicksArray;
+        startGame();
+    });
+
     socket.on('syncChicks', function(syncedChicks) {
         chicks = syncedChicks;
     });
@@ -61,14 +83,26 @@ $(document).ready(function() {
 
     socket.on('disconnect', function() {
         console.log("socket connection was closed");
-    })
+    });
 
-    // register keypresses
-    document.onkeydown = sendChickControl;
+ /*   function startCountdown(startingNumber) {
+        while(startingNumber >= 0) {
+            setTimeout(function() {
+                drawText(startingNumber)
+            }, startingNumber * 1000);
+            --startingNumber;
+        }
+    }
 
-    // register mouse click
-    document.getElementById("game").onclick = sendHunterShot;
+    function drawText(text) {
+        ctx.font = "30px Arial";
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, c.width/2 ,c.height / 2);
+    }*/
 
+    // functions
     function sendChickControl(e) {
         let direction;
         e = e || window.event;
@@ -113,8 +147,7 @@ $(document).ready(function() {
         });
     }
 
-    function startGame() {
-        const ctx = c.getContext("2d");
+/*    function startGame() {
 
         const xMax = c.width;
         const yMax = c.height;
@@ -186,7 +219,7 @@ $(document).ready(function() {
 
     function drawChicks(ctx, chicks){
 
-        for(let i = 0; i < chicks.length; i++) {            
+        for(let i = 0; i < chicks.length; i++) {
             if(chicks[i].direction === 'e') {
                 if(i === myChick) {
                     ctx.drawImage(picReverseMe, chicks[i].x, chicks[i].y);
@@ -202,4 +235,121 @@ $(document).ready(function() {
             }
         }
     }
-});
+}); */});
+
+class Gameboard {
+    constructor(canvasElement) {
+        this.canvas = canvasElement;
+        this.ctx = this.canvas.getContext("2d");
+        this.width = this.canvas.width;
+        this.height = this.canvas.height;
+        this.chicks = [];
+    }
+
+    startCountdown(i) {
+        const thisSave = this;
+        this.countdownValue = i;
+        while(i >= 0) {
+            setTimeout(function() {
+                thisSave.drawText(i);
+                --thisSave.countdownValue
+            }, i * 1000);
+            --i;
+        }
+    }
+
+    drawText(text) {
+        this.clearCanvas();
+        this.ctx.font = "30px Arial";
+        this.ctx.fillStyle = "black";
+        this.ctx.textAlign = "center";
+        this.ctx.textBaseline = "middle";
+        this.ctx.fillText(this.countdownValue, this.canvas.width / 2 ,this.canvas.height / 2);
+    }
+
+    startGame(chicks) {
+        this.chicks = chicks;
+        const gameInterval = setInterval(function(){
+            this.gameLoop();
+        }, REFRESH_RATE);
+    }
+
+    gameLoop() {
+        this.ctx.clearRect(0,0, c.width, c.height);
+        this.updateDirections(); // uncomment when server is working
+        this.updateChicks();
+        this.drawChicks();
+    }
+
+    updateDirections() {
+        for(let i = 0; i < chicks.length; i++) {
+            if(i === myChick) {
+                continue;
+            }
+
+            const random = Math.random();
+            if(Math.round(random * 100) % 15 == 1) {
+                switch (true) {
+                    case (random < 0.25):
+                        chicks[i].direction = 'n';
+                        break;
+                    case (random < 0.5):
+                        chicks[i].direction = 'e';
+                        break;
+                    case (random < 0.75):
+                        chicks[i].direction = 's';
+                        break;
+                    default:
+                        chicks[i].direction = 'w';
+                }
+            }
+        }
+    }
+
+    updateChicks() {
+        for(let i = 0; i < chicks.length; i++) {
+            switch(chicks[i].direction) {
+                case 'n':
+                    chicks[i].y -= ySpeed;
+                    chicks[i].y  = (chicks[i].y  < 0) ? 0: chicks[i].y;
+                    break;
+                case 'e':
+                    chicks[i].x += xSpeed;
+                    chicks[i].x = (chicks[i].x > c.width) ? c.width: chicks[i].x;
+                  break;
+                case 's':
+                    chicks[i].y += ySpeed;
+                    chicks[i].y = (chicks[i].y > c.height) ? c.height: chicks[i].y;
+                    break;
+                case 'w':
+                    chicks[i].x -= xSpeed;
+                    chicks[i].x  = (chicks[i].x  < 0) ? 0: chicks[i].x;
+                    break;
+                default:
+                    alert("one of the chicken has an undefined flying-direction");
+            }
+        }
+    }
+
+    drawChicks() {
+        for(let i = 0; i < chicks.length; i++) {
+            if(chicks[i].direction === 'e') {
+                if(i === myChick) {
+                    this.ctx.drawImage(picReverseMe, chicks[i].x, chicks[i].y);
+                } else {
+                    this.ctx.drawImage(picReverse, chicks[i].x, chicks[i].y);
+                }
+            } else {
+                if(i === myChick) {
+                    this.ctx.drawImage(picMe, chicks[i].x, chicks[i].y);
+                } else {
+                    this.ctx.drawImage(pic, chicks[i].x, chicks[i].y);
+                }
+            }
+        }
+    }
+
+    clearCanvas() {
+        this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
+    }
+};
