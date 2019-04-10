@@ -21,7 +21,6 @@ $(document).ready(function() {
     console.log("game.js loaded");
 
     const c = document.getElementById("game");
-
     const game = new Gameboard(c);
 
     // initialize necessary global variables
@@ -45,7 +44,7 @@ $(document).ready(function() {
 
 
     // register mouse click
-//    document.getElementById("game").onclick = sendHunterShot;
+    document.getElementById("game").onclick = sendHunterShot;
     document.getElementById("countdown").onclick = function(){console.log("countdown clicked");game.startCountdown(COUNTDOWN_TIME)};
     document.getElementById("start").onclick = function(){game.startGame(chicks)};
 
@@ -65,12 +64,12 @@ $(document).ready(function() {
     });
 
     socket.on('startingSoon', function() {
-        startCountdown(countDownTime);
+        game.startCountdown(countDownTime);
     });
 
     socket.on('startingNow', function(chickArray) {
         chicks = chicksArray;
-        startGame();
+        game.startGame(chicks);
     });
 
     socket.on('syncChicks', function(syncedChicks) {
@@ -84,23 +83,6 @@ $(document).ready(function() {
     socket.on('disconnect', function() {
         console.log("socket connection was closed");
     });
-
- /*   function startCountdown(startingNumber) {
-        while(startingNumber >= 0) {
-            setTimeout(function() {
-                drawText(startingNumber)
-            }, startingNumber * 1000);
-            --startingNumber;
-        }
-    }
-
-    function drawText(text) {
-        ctx.font = "30px Arial";
-        ctx.fillStyle = "black";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(text, c.width/2 ,c.height / 2);
-    }*/
 
     // functions
     function sendChickControl(e) {
@@ -141,101 +123,15 @@ $(document).ready(function() {
         var canvasPosX = event.clientX - rect.left;
         var canvasPosY = event.clientY - rect.top;
 
+        console.log("canvasX: %s;canvasY:%s", canvasPosX, canvasPosY);
+
         socket.emit('hunterShot', {
             x: canvasPosX,
             y: canvasPosY
         });
     }
 
-/*    function startGame() {
-
-        const xMax = c.width;
-        const yMax = c.height;
-
-        const refreshRate = 30;
-
-        const gameInterval = setInterval(function(){
-            gameLoop(ctx, xMax, yMax);
-        }, refreshRate);
-    }
-
-    function gameLoop(ctx, xMax, yMax) {
-        ctx.clearRect(0,0, xMax, yMax);
-        updateDirections(chicks); // uncomment when server is working
-        updateChicks(chicks, xMax, yMax);
-        drawChicks(ctx, chicks);
-    }
-
-    function updateDirections(chicks) {
-        for(let i = 0; i < chicks.length; i++) {
-            if(i === myChick) {
-                continue;
-            }
-
-            const random = Math.random();
-            if(Math.round(random * 100) % 15 == 1) {
-                switch (true) {
-                    case (random < 0.25):
-                        chicks[i].direction = 'n';
-                        break;
-                    case (random < 0.5):
-                        chicks[i].direction = 'e';
-                        break;
-                    case (random < 0.75):
-                        chicks[i].direction = 's';
-                        break;
-                    default:
-                        chicks[i].direction = 'w';
-                }
-            }
-        }
-
-    }
-
-    function updateChicks(chicks, xMax, yMax) {
-        for(let i = 0; i < chicks.length; i++) {
-            switch(chicks[i].direction) {
-                case 'n':
-                    chicks[i].y -= ySpeed;
-                    chicks[i].y  = (chicks[i].y  < 0) ? 0: chicks[i].y;
-                    break;
-                case 'e':
-                    chicks[i].x += xSpeed;
-                    chicks[i].x = (chicks[i].x > xMax) ? xMax: chicks[i].x;
-                  break;
-                case 's':
-                    chicks[i].y += ySpeed;
-                    chicks[i].y = (chicks[i].y > yMax) ? yMax: chicks[i].y;
-                    break;
-                case 'w':
-                    chicks[i].x -= xSpeed;
-                    chicks[i].x  = (chicks[i].x  < 0) ? 0: chicks[i].x;
-                    break;
-                default:
-                    alert("one of the chicken has an undefined flying-direction");
-            }
-        }
-    }
-
-    function drawChicks(ctx, chicks){
-
-        for(let i = 0; i < chicks.length; i++) {
-            if(chicks[i].direction === 'e') {
-                if(i === myChick) {
-                    ctx.drawImage(picReverseMe, chicks[i].x, chicks[i].y);
-                } else {
-                    ctx.drawImage(picReverse, chicks[i].x, chicks[i].y);
-                }
-            } else {
-                if(i === myChick) {
-                    ctx.drawImage(picMe, chicks[i].x, chicks[i].y);
-                } else {
-                    ctx.drawImage(pic, chicks[i].x, chicks[i].y);
-                }
-            }
-        }
-    }
-}); */});
+});
 
 class Gameboard {
     constructor(canvasElement) {
@@ -268,21 +164,22 @@ class Gameboard {
     }
 
     startGame(chicks) {
+        const thisSave = this;
         this.chicks = chicks;
         const gameInterval = setInterval(function(){
-            this.gameLoop();
+            thisSave.gameLoop();
         }, REFRESH_RATE);
     }
 
     gameLoop() {
-        this.ctx.clearRect(0,0, c.width, c.height);
+        this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
         this.updateDirections(); // uncomment when server is working
         this.updateChicks();
         this.drawChicks();
     }
 
     updateDirections() {
-        for(let i = 0; i < chicks.length; i++) {
+        for(let i = 0; i < this.chicks.length; i++) {
             if(i === myChick) {
                 continue;
             }
@@ -291,39 +188,39 @@ class Gameboard {
             if(Math.round(random * 100) % 15 == 1) {
                 switch (true) {
                     case (random < 0.25):
-                        chicks[i].direction = 'n';
+                        this.chicks[i].direction = 'n';
                         break;
                     case (random < 0.5):
-                        chicks[i].direction = 'e';
+                        this.chicks[i].direction = 'e';
                         break;
                     case (random < 0.75):
-                        chicks[i].direction = 's';
+                        this.chicks[i].direction = 's';
                         break;
                     default:
-                        chicks[i].direction = 'w';
+                        this.chicks[i].direction = 'w';
                 }
             }
         }
     }
 
     updateChicks() {
-        for(let i = 0; i < chicks.length; i++) {
-            switch(chicks[i].direction) {
+        for(let i = 0; i < this.chicks.length; i++) {
+            switch(this.chicks[i].direction) {
                 case 'n':
-                    chicks[i].y -= ySpeed;
-                    chicks[i].y  = (chicks[i].y  < 0) ? 0: chicks[i].y;
+                    this.chicks[i].y -= ySpeed;
+                    this.chicks[i].y  = (this.chicks[i].y  < 0) ? 0: this.chicks[i].y;
                     break;
                 case 'e':
-                    chicks[i].x += xSpeed;
-                    chicks[i].x = (chicks[i].x > c.width) ? c.width: chicks[i].x;
+                    this.chicks[i].x += xSpeed;
+                    this.chicks[i].x = (this.chicks[i].x > this.canvas.width) ?this.canvas.width: this.chicks[i].x;
                   break;
                 case 's':
-                    chicks[i].y += ySpeed;
-                    chicks[i].y = (chicks[i].y > c.height) ? c.height: chicks[i].y;
+                    this.chicks[i].y += ySpeed;
+                    this.chicks[i].y = (this.chicks[i].y > this.canvas.height) ? this.canvas.height: this.chicks[i].y;
                     break;
                 case 'w':
-                    chicks[i].x -= xSpeed;
-                    chicks[i].x  = (chicks[i].x  < 0) ? 0: chicks[i].x;
+                    this.chicks[i].x -= xSpeed;
+                    this.chicks[i].x  = (this.chicks[i].x  < 0) ? 0: this.chicks[i].x;
                     break;
                 default:
                     alert("one of the chicken has an undefined flying-direction");
@@ -332,18 +229,18 @@ class Gameboard {
     }
 
     drawChicks() {
-        for(let i = 0; i < chicks.length; i++) {
-            if(chicks[i].direction === 'e') {
+        for(let i = 0; i < this.chicks.length; i++) {
+            if(this.chicks[i].direction === 'e') {
                 if(i === myChick) {
-                    this.ctx.drawImage(picReverseMe, chicks[i].x, chicks[i].y);
+                    this.ctx.drawImage(picReverseMe, this.chicks[i].x, this.chicks[i].y);
                 } else {
-                    this.ctx.drawImage(picReverse, chicks[i].x, chicks[i].y);
+                    this.ctx.drawImage(picReverse, this.chicks[i].x, this.chicks[i].y);
                 }
             } else {
                 if(i === myChick) {
-                    this.ctx.drawImage(picMe, chicks[i].x, chicks[i].y);
+                    this.ctx.drawImage(picMe, this.chicks[i].x, this.chicks[i].y);
                 } else {
-                    this.ctx.drawImage(pic, chicks[i].x, chicks[i].y);
+                    this.ctx.drawImage(pic, this.chicks[i].x, this.chicks[i].y);
                 }
             }
         }
