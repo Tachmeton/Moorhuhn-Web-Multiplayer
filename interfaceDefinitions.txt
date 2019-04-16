@@ -4,11 +4,16 @@ socketio:
     empty
 
 'startingNow': // sent from server
+JSON Object:
 array of chicks
     -id
     -x
     -y
     -direction
+time left in seconds
+role of player
+(myChickenId)
+(bulletsLeft)
 
 'updateChick': // sent from server
 single chick object
@@ -23,6 +28,7 @@ array of all chicks with following attributes
     -x
     -y
     -direction
+    -lives
 
 'killReviveChicken': // sent from server
 chicken object with attributes

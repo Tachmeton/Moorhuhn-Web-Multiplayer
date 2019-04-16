@@ -2,11 +2,19 @@
 /* eslint-disable */
 
 const TEST_MODE = true;
+const PLAYER_ROLE = "h";
+const MY_CHICKEN_ID = 1;
+const TOTAL_LIVES = 5;
+const MAX_BULLETS = 10;
+
+const HEART_SYMBOL = "♥";
 const COUNTDOWN_TIME = 5;
 const REFRESH_RATE = 30;
 const xSpeed = 5;
 const ySpeed = 20;
-const myChick = 1;
+
+const chickenRelativWidth = 0.072;
+const chickenRelativHeight = 0.066;
 
 const picLeft = new Image();
 const picLeftMe = new Image();
@@ -16,10 +24,8 @@ const picDown = new Image();
 const picDownMe = new Image();
 const picRight = new Image();
 const picRightMe = new Image();
+const bullet = new Image();
 
-picDown.onload = function(e) {
-    console.log("pic down loaded" + e);
-};
 picLeft.src = "img/copyrightChick.png";
 picLeftMe.src = "img/copyrightChickGreen.png";
 picUp.src = "img/copyrightChickUp.png";
@@ -28,6 +34,7 @@ picDown.src = "img/copyrightChickDown.png";
 picDownMe.src = "img/copyrightChickDownMe.png";
 picRight.src = "img/copyrightChickReverse.png";
 picRightMe.src = "img/copyrightChickReverseGreen.png";
+bullet.src = "img/bullet.png";
 
 $(document).ready(function() {
     console.log("game.js loaded");
@@ -40,17 +47,20 @@ $(document).ready(function() {
         {
             x: 140,
             y: 20,
-            direction: 's'
+            direction: 's',
+            lives:1
         },
         {
             x: 280,
             y:200,
-            direction: 'e'
+            direction: 'e',
+            lives:3
         },
         {
             x:400,
             y:100,
-            direction: 'w'
+            direction: 'w',
+            lives: 5
         }
     ];
 
@@ -58,11 +68,21 @@ $(document).ready(function() {
     // register mouse click
     document.getElementById("game").onclick = sendHunterShot;
     document.getElementById("countdown").onclick = function(){console.log("countdown clicked");game.startCountdown(COUNTDOWN_TIME)};
-    document.getElementById("start").onclick = function(){game.startGame(chicks)};
+    document.getElementById("start").onclick = function(){
+        game.startGame({
+            chicks: chicks,
+            timeLeft: 200,
+            role: PLAYER_ROLE,
+            myChickenId: MY_CHICKEN_ID,
+            bulletsLeft: MAX_BULLETS
+        });
+    };
 
 
     // register keypresses
-    document.onkeydown = sendChickControl;
+    document.onkeydown = function(e){
+        sendChickControl(e, game);
+    };
 
     // make socket connection
     const socket = io('http://localhost');
@@ -79,9 +99,9 @@ $(document).ready(function() {
         game.startCountdown(countDownTime);
     });
 
-    socket.on('startingNow', function(chickArray) {
-        chicks = chicksArray;
-        game.startGame(chicks);
+    socket.on('startingNow', function(data) {
+        chicks = data.chicks;
+        game.startGame(data);
     });
 
     socket.on('syncChicks', function(syncedChicks) {
@@ -101,7 +121,8 @@ $(document).ready(function() {
     });
 
     // functions
-    function sendChickControl(e) {
+    function sendChickControl(e, game) {
+        e.preventDefault();
         let direction;
         e = e || window.event;
         if (e.keyCode == '38') { // up key
@@ -118,17 +139,17 @@ $(document).ready(function() {
         }
 
         // only emit to server if direction changed
-        if(chicks[myChick].direction != direction) {
+        if(chicks[game.myChickenId].direction != direction) {
             socket.emit('chickInput', {
-                id:chicks[myChick].id,
-                x:chicks[myChick].x,
-                y:chicks[myChick].y,
+                id:chicks[game.myChickenId].id,
+                x:chicks[game.myChickenId].x,
+                y:chicks[game.myChickenId].y,
                 direction:direction
             });
         }
 
         if(TEST_MODE) {
-            chicks[myChick].direction = direction;
+            chicks[game.myChickenId].direction = direction;
         }
     }
 
@@ -170,21 +191,36 @@ class Gameboard {
         }
     }
 
-    drawText(text) {
+    drawText() {
         this.clearCanvas();
-        this.ctx.font = "30px Arial";
-        this.ctx.fillStyle = "black";
-        this.ctx.textAlign = "center";
-        this.ctx.textBaseline = "middle";
-        this.ctx.fillText(this.countdownValue, this.canvas.width / 2 ,this.canvas.height / 2);
+        if(this.countdownValue !== 0){
+            this.ctx.font = "30px Arial";
+            this.ctx.fillStyle = "black";
+            this.ctx.textAlign = "center";
+            this.ctx.textBaseline = "middle";
+            this.ctx.fillText(this.countdownValue, this.canvas.width / 2 ,this.canvas.height / 2);
+        }
     }
 
-    startGame(chicks) {
+    startGame(game) {
         const thisSave = this;
-        this.chicks = chicks;
+        this.chicks = game.chicks;
+        this.timeLeft = game.timeLeft;
+        this.myRole = game.role;
+
+        if(this.myRole === "h") {
+            $(this.canvas).css("cursor", "url('img/crosshair.png') 25 25 , auto");
+            this.bulletsLeft = game.bulletsLeft;
+        } else {
+            this.myChickenId = game.myChickenId;
+        }
+
         const gameInterval = setInterval(function(){
             thisSave.gameLoop();
         }, REFRESH_RATE);
+        const timeLeftInterval = setInterval(function(){
+            --thisSave.timeLeft;
+        }, 1000);
     }
 
     gameLoop() {
@@ -192,11 +228,19 @@ class Gameboard {
         this.updateDirections(); // uncomment when server is working
         this.updateChicks();
         this.drawChicks();
+        this.drawTimeLeft();
+
+        if(this.myRole == "h") {
+            this.drawBulletsLeft();
+        } else {
+            this.drawLives();
+        }
+//        this.drawLives();
     }
 
     updateDirections() {
         for(let i = 0; i < this.chicks.length; i++) {
-            if(i === myChick) {
+            if(i === this.myChickenId) {
                 continue;
             }
 
@@ -247,30 +291,65 @@ class Gameboard {
     drawChicks() {
         for(let i = 0; i < this.chicks.length; i++) {
             if(this.chicks[i].direction === 'e') {
-                if(i === myChick) {
-                    this.ctx.drawImage(picRightMe, this.chicks[i].x, this.chicks[i].y);
+                if(i === this.myChickenId) {
+                    this.ctx.drawImage(picRightMe, this.chicks[i].x, this.chicks[i].y   );
                 } else {
                     this.ctx.drawImage(picRight, this.chicks[i].x, this.chicks[i].y);
                 }
             } else if(this.chicks[i].direction === 'w'){
-                if(i === myChick) {
+                if(i === this.myChickenId) {
                     this.ctx.drawImage(picLeftMe, this.chicks[i].x, this.chicks[i].y);
                 } else {
                     this.ctx.drawImage(picLeft, this.chicks[i].x, this.chicks[i].y);
                 }
             }else if(this.chicks[i].direction === 'n'){
-                if(i === myChick) {
+                if(i === this.myChickenId) {
                     this.ctx.drawImage(picUpMe, this.chicks[i].x, this.chicks[i].y);
                 } else {
                     this.ctx.drawImage(picUp, this.chicks[i].x, this.chicks[i].y);
                 }
             }else{
-                if(i === myChick) {
+                if(i === this.myChickenId) {
                     this.ctx.drawImage(picDownMe, this.chicks[i].x, this.chicks[i].y);
                 } else {
                     this.ctx.drawImage(picDown, this.chicks[i].x, this.chicks[i].y);
                 }
             }
+        }
+    }
+
+    drawTimeLeft() {
+        this.ctx.font = "30px Arial";
+        this.ctx.fillStyle = "black";
+        this.ctx.textAlign = "right";
+        this.ctx.textBaseline = "top";
+        this.ctx.fillText(this.timeLeft, this.canvas.width - 10 , 10);
+    }
+
+    drawLives() {
+        let xPos = this.canvas.width;
+
+        const livesLeft = this.chicks[this.myChickenId].lives;
+        const livesLost = TOTAL_LIVES - livesLeft;
+
+        this.ctx.font = "30px Arial";
+        this.ctx.fillStyle = "black";
+        this.ctx.textAlign = "right";
+        this.ctx.textBaseline = "bottom";
+
+        const xOffset = this.ctx.measureText(HEART_SYMBOL.repeat(livesLost)).width;
+
+        this.ctx.fillText(HEART_SYMBOL.repeat(livesLost), xPos - 10  , this.canvas.height);
+
+        this.ctx.fillStyle = "red";
+        this.ctx.fillText(HEART_SYMBOL.repeat(livesLeft), xPos - 10 -xOffset  , this.canvas.height);
+
+
+    }
+
+    drawBulletsLeft() {
+        for(let i = 0; i < this.bulletsLeft; ++i) {
+            this.ctx.drawImage(bullet, this.canvas.width - bullet.width - (i*bullet.width), this.canvas.height - bullet.height - 10);
         }
     }
 
