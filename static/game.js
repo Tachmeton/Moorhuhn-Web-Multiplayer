@@ -1,11 +1,12 @@
-/* eslint-disable no-undef */
-/* eslint-disable */
-
 const TEST_MODE = true;
 const PLAYER_ROLE = "h";
 const MY_CHICKEN_ID = 1;
 const TOTAL_LIVES = 5;
 const MAX_BULLETS = 10;
+const GAME_TIME = 10;
+const CROSSHAIRFADE_X_TEST = 80;
+const CROSSHAIRFADE_Y_TEST = 150;
+const END_SCREEN_MESSAGE = "GAME OVER";
 
 const HEART_SYMBOL = "♥";
 const COUNTDOWN_TIME = 5;
@@ -25,6 +26,7 @@ const picDownMe = new Image();
 const picRight = new Image();
 const picRightMe = new Image();
 const bullet = new Image();
+const crosshair = new Image();
 
 picLeft.src = "img/copyrightChick.png";
 picLeftMe.src = "img/copyrightChickGreen.png";
@@ -35,6 +37,7 @@ picDownMe.src = "img/copyrightChickDownMe.png";
 picRight.src = "img/copyrightChickReverse.png";
 picRightMe.src = "img/copyrightChickReverseGreen.png";
 bullet.src = "img/bullet.png";
+crosshair.src = "img/crosshair.png";
 
 $(document).ready(function() {
     console.log("game.js loaded");
@@ -71,12 +74,18 @@ $(document).ready(function() {
     document.getElementById("start").onclick = function(){
         game.startGame({
             chicks: chicks,
-            timeLeft: 200,
+            timeLeft: GAME_TIME,
             role: PLAYER_ROLE,
             myChickenId: MY_CHICKEN_ID,
             bulletsLeft: MAX_BULLETS
         });
     };
+    document.getElementById("crosshairPosition").onclick = function() {
+        game.animatedShot.progress = REFRESH_RATE;
+        game.animatedShot.x = CROSSHAIRFADE_X_TEST;
+        game.animatedShot.y = CROSSHAIRFADE_Y_TEST;
+    };
+
 
 
     // register keypresses
@@ -112,8 +121,14 @@ $(document).ready(function() {
         chicks[chicken.id] = chicken;
     });
 
-    socket.on('killReviveChick', function(chicken) {
-        chicks[chicken.id].alive = chicken.alive;
+    socket.on('killChick', function(chicken) {
+        chicks[chicken.id].alive = false;
+    });
+
+    socket.on('crosshairPosition', function(data) {
+        game.animatedShot.progress = REFRESH_RATE;
+        game.animatedShot.x = data.x;
+        game.animatedShot.y = data.y;
     });
 
     socket.on('disconnect', function() {
@@ -177,6 +192,11 @@ class Gameboard {
         this.width = this.canvas.width;
         this.height = this.canvas.height;
         this.chicks = [];
+        this.animatedShot = {
+            progress: 0,
+            x: 0,
+            y: 0
+        }
     }
 
     startCountdown(i) {
@@ -184,21 +204,21 @@ class Gameboard {
         this.countdownValue = i;
         while(i >= 0) {
             setTimeout(function() {
-                thisSave.drawText(i);
+                thisSave.clearCanvas();
+                thisSave.drawText(thisSave.countdownValue);
                 --thisSave.countdownValue
             }, i * 1000);
             --i;
         }
     }
 
-    drawText() {
-        this.clearCanvas();
+    drawText(text) {
         if(this.countdownValue !== 0){
             this.ctx.font = "30px Arial";
             this.ctx.fillStyle = "black";
             this.ctx.textAlign = "center";
             this.ctx.textBaseline = "middle";
-            this.ctx.fillText(this.countdownValue, this.canvas.width / 2 ,this.canvas.height / 2);
+            this.ctx.fillText(text, this.canvas.width / 2 ,this.canvas.height / 2);
         }
     }
 
@@ -215,19 +235,27 @@ class Gameboard {
             this.myChickenId = game.myChickenId;
         }
 
-        const gameInterval = setInterval(function(){
+        this.gameInterval = setInterval(function(){
             thisSave.gameLoop();
         }, REFRESH_RATE);
-        const timeLeftInterval = setInterval(function(){
+        this.timeLeftInterval = setInterval(function(){
             --thisSave.timeLeft;
         }, 1000);
     }
 
     gameLoop() {
-        this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
+        this.clearCanvas();
+        if(this.timeLeft === 0) {
+            this.drawText(END_SCREEN_MESSAGE);
+            this.drawTimeLeft();
+            clearInterval(this.gameInterval);
+            clearInterval(this.timeLeftInterval);
+            return;
+        };
         this.updateDirections(); // uncomment when server is working
         this.updateChicks();
         this.drawChicks();
+        this.drawAnimatedShot();
         this.drawTimeLeft();
 
         if(this.myRole == "h") {
@@ -353,7 +381,16 @@ class Gameboard {
         }
     }
 
+    drawAnimatedShot() {
+        if(this.animatedShot.progress > 0) {
+            this.ctx.globalAlpha = this.animatedShot.progress / REFRESH_RATE;
+            this.ctx.drawImage(crosshair, this.animatedShot.x, this.animatedShot.y)
+            this.ctx.globalAlpha = 1;
+            --this.animatedShot.progress;
+        }
+    }
+
     clearCanvas() {
         this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
     }
-};
+}
