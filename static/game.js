@@ -85,6 +85,9 @@ $(document).ready(function() {
         game.animatedShot.x = CROSSHAIRFADE_X_TEST;
         game.animatedShot.y = CROSSHAIRFADE_Y_TEST;
     };
+    document.getElementById("brutallyMurdered").onclick = function() {
+        chicks[1].alive = false;
+    };
 
 
 
@@ -318,6 +321,9 @@ class Gameboard {
 
     drawChicks() {
         for(let i = 0; i < this.chicks.length; i++) {
+            if(this.chicks[i].alive === false) {
+                continue;
+            }
             if(this.chicks[i].direction === 'e') {
                 if(i === this.myChickenId) {
                     this.ctx.drawImage(picRightMe, this.chicks[i].x, this.chicks[i].y   );
