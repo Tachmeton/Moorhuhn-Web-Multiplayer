@@ -216,7 +216,7 @@ class Gameboard {
     }
 
     drawText(text) {
-        if(this.countdownValue !== 0){
+        if(this.countdownValue >= 0){
             this.ctx.font = "30px Arial";
             this.ctx.fillStyle = "black";
             this.ctx.textAlign = "center";
