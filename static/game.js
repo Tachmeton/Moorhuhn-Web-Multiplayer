@@ -59,7 +59,7 @@ $(document).ready(function() {
     document.getElementById("game").onclick = sendHunterShot;
     document.getElementById("countdown").onclick = function(){console.log("countdown clicked");game.startCountdown(COUNTDOWN_TIME)};
     document.getElementById("start").onclick = function(){game.startGame(chicks)};
-    document.getElementById("join Room").onclick = function(){game.joinRoom(chicks)};
+    document.getElementById("join Room").onclick = function(){game.joinRoom()};
 
 
     // register keypresses
@@ -83,6 +83,12 @@ $(document).ready(function() {
     socket.on('startingNow', function(chickArray) {
         chicks = chicksArray;
         game.startGame(chicks);
+    });
+
+    //Von Bastian reingefügt kommt später warsch weg
+    socket.on('joined', function(){
+        let joinButton = document.getElementById('joinRoom');
+        joinButton.innerHTML = "join Worked";
     });
 
     socket.on('syncChicks', function(syncedChicks) {
@@ -186,6 +192,12 @@ class Gameboard {
         const gameInterval = setInterval(function(){
             thisSave.gameLoop();
         }, REFRESH_RATE);
+    }
+
+    /******************** */
+    joinRoom(){
+        //joined Room 1 (wer hätte es gedacht?)
+        socket.emit("joinRoom", "1");
     }
 
     gameLoop() {

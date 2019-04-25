@@ -9,7 +9,7 @@ const io = require('socket.io')(server);
 
 let lobbyPlayer = 0;
 
-let rooms = []
+let rooms = [];
 
 var chicks = [];
 
@@ -22,6 +22,7 @@ app.listen(3000);
 
 io.on('connection', client => {
   console.log("New Connection" + client.id);
+  socket.emit("connect")
 
 
   client.on('event', data => { /* … */ });
@@ -36,13 +37,24 @@ io.on('connection', client => {
     case "first Room":
       socket.join(room);
 
+      let chicken = {
+        id: socket.id,
+        x: Math.round(Math.random() * 16000),
+        y: Math.round(Math.random() * 9000),
+        direction: "w"
+      };
+
       let room = {
         id: room,
-        joinedPlayer: 1
+        joinedPlayer: 1,
+        player: [chicken]
       };
 
       rooms.push(room);
+      
       //Success
+      console.log(socket.id + "joined room" + room);
+      socket.emit("joined");
       break;
 
       case "Room exists and space left":
@@ -52,20 +64,32 @@ io.on('connection', client => {
       //rooms durchgehen joinedPlayer erhöhen
       rooms.forEach(function(element){
         if(element.id == room){
-          element.joinedPlayer += 1;      //funktioniert das?
+          element.joinedPlayer += 1;
+
+          let chicken = {
+            id: socket.id,
+            x: Math.round(Math.random() * 16000),
+            y: Math.round(Math.random() * 9000),
+            direction: "w"
+          };
+
+          element.player.push(chicken);
         }
       });
       //Success
+      console.log(socket.id + "joined room" + room);
+      socket.emit("joined");
       break;
 
       case "Room exists but full":
 
       //Error zurückgeben
-
+      console.log(socket.id + "could not join room" + room);
       break;
 
       default:
       //Error
+      console.log(socket.id + "could not join room" + room);
       break
 
     }
@@ -105,7 +129,7 @@ function startGame(room){
       io.on(room).emit("startingNow");     //Standardwerte von chicks vereinbaren
     }, 5000);
 
-    updateChicks(room);
+    setIntervall(updateChicks(room),1000);
 }
 
 
