@@ -59,6 +59,7 @@ $(document).ready(function() {
     document.getElementById("game").onclick = sendHunterShot;
     document.getElementById("countdown").onclick = function(){console.log("countdown clicked");game.startCountdown(COUNTDOWN_TIME)};
     document.getElementById("start").onclick = function(){game.startGame(chicks)};
+    document.getElementById("join Room").onclick = function(){game.joinRoom(chicks)};
 
 
     // register keypresses
