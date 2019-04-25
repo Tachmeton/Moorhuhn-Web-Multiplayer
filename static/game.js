@@ -1,3 +1,6 @@
+// make socket connection
+const socket = io.connect('http://localhost:3000');
+
 /* eslint-disable no-undef */
 /* eslint-disable */
 
@@ -64,9 +67,6 @@ $(document).ready(function() {
 
     // register keypresses
     document.onkeydown = sendChickControl;
-
-    // make socket connection
-    const socket = io('http://localhost');
 
     socket.on('connect', function() {
         console.log("socket connection established");

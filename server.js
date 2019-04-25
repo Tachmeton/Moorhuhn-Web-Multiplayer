@@ -1,11 +1,14 @@
-const express = require("express");
-
+const express = require('express');
 const app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
+
+app.listen(3000, function() {
+  console.log("server now listening on port 3000");
+});
 
 app.use(express.static("static"));
 
-const server = require('http').createServer(app);
-const io = require('socket.io')(server);
 
 let lobbyPlayer = 0;
 
@@ -17,10 +20,7 @@ app.get("/", function(req, res) {
     res.sendFile(__dirname + "/index.html");
 });
 
-app.listen(3000);
-
-
-io.on('connection', client => {
+io.on('connection', (client) => {
   console.log("New Connection" + client.id);
   socket.emit("connect")
 
