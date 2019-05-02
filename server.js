@@ -1,16 +1,17 @@
 const express = require('express');
 const app = express();
-const server = require('http').Server(app);
-const io = require('socket.io')(server);
-
-app.listen(3000, function() {
+const socket = require('socket.io');
+const server = app.listen(3000, function() {
   console.log("server now listening on port 3000");
 });
+const io = require('socket.io')(server);
 
 app.use(express.static("static"));
 
 
 let lobbyPlayer = 0;
+
+lobbyZaehlerStartet = false;
 
 let rooms = [];
 
@@ -21,8 +22,8 @@ app.get("/", function(req, res) {
 });
 
 io.on('connection', (client) => {
-  console.log("New Connection" + client.id);
-  socket.emit("connect")
+  console.log("New Connection: " + client.id);
+  //socket.emit("connect");
 
 
   client.on('event', data => { /* … */ });
@@ -33,33 +34,34 @@ io.on('connection', (client) => {
     
     //Room gibts/ voll?
     let roomthere = roomFull(room);
+    console.log(roomthere + "  " + client.id);
     switch(roomthere){
-    case "first Room":
-      socket.join(room);
+    case "first in Room":
+      client.join(room);
 
       let chicken = {
-        id: socket.id,
+        id: client.id,
         x: Math.round(Math.random() * 16000),
         y: Math.round(Math.random() * 9000),
         direction: "w"
       };
 
-      let room = {
+      let newRoom = {
         id: room,
         joinedPlayer: 1,
         player: [chicken]
       };
 
-      rooms.push(room);
+      rooms.push(newRoom);
       
       //Success
-      console.log(socket.id + "joined room" + room);
-      socket.emit("joined");
+      console.log(client.id + " joined room" + room);
+      client.emit("joined");
       break;
 
       case "Room exists and space left":
 
-      socket.join(room);
+      client.join(room);
 
       //rooms durchgehen joinedPlayer erhöhen
       rooms.forEach(function(element){
@@ -67,7 +69,7 @@ io.on('connection', (client) => {
           element.joinedPlayer += 1;
 
           let chicken = {
-            id: socket.id,
+            id: client.id,
             x: Math.round(Math.random() * 16000),
             y: Math.round(Math.random() * 9000),
             direction: "w"
@@ -77,19 +79,20 @@ io.on('connection', (client) => {
         }
       });
       //Success
-      console.log(socket.id + "joined room" + room);
-      socket.emit("joined");
+      console.log(client.id + "joined room" + room);
+      client.emit("joined");
       break;
 
       case "Room exists but full":
 
       //Error zurückgeben
-      console.log(socket.id + "could not join room" + room);
+      console.log(client.id + " could not join room " + room);
       break;
 
       default:
       //Error
-      console.log(socket.id + "could not join room" + room);
+      console.log("Default Case Join Room");
+      console.log(client.id + " could not join room " + room);
       break
 
     }
@@ -99,7 +102,7 @@ io.on('connection', (client) => {
     
 
     if(!lobbyZaehlerStartet){
-      setIntervall(waitonLobbyFull(room),3000);
+      setInterval(function(){waitonLobbyFull(room,client)},3000);
       lobbyZaehlerStartet = true;
     }
     lobbyPlayer +=1;
@@ -109,27 +112,81 @@ io.on('connection', (client) => {
 
 //https://socket.io/docs/rooms-and-namespaces/
 
-function roomFull(){
-  return false;
+function roomFull(room){
+
+  let roomState = 0;
+  //0 ist kein Room, 1 room noch free aber nicht erster, 2 room full
+
+  let i = 0;
+  while(i < rooms.length && roomState === 0){
+    console.log("Room Id: " + rooms[i].id);
+    if(rooms[i].id === room){
+      console.log("joined Player: " + rooms[i].joinedPlayer);
+      if(rooms[i].joinedPlayer < 2){
+        roomState = 1;
+      }else{
+        roomState = 2;
+      }
+    }
+  }
+
+  console.log("roomState: " + roomState);
+
+  switch(roomState){
+    case 0:
+    return "first in Room";
+    break;
+
+    case 1:
+    return "Room exists and space left";
+    break;
+
+    case 2:
+    return "Room exists but full";
+    break;
+
+    default:
+    return "error --default";
+    break;
+  }
+
+  /*rooms.forEach(function(element){
+    console.log(element.id + " == " + room);
+    console.log(element.id == room);
+    if(element.id == room){
+
+      if(element.joinedPlayer >= 2){
+        return "Room exists but full";
+      }else{
+        return "Room exists and space left";
+      }
+
+    }else{
+      return "first in Room";
+    }
+
+  });
+  //Room existiert noch nicht
+  return "error";*/
 }
 
 
-function waitonLobbyFull(room){
+function waitonLobbyFull(room, client){
   if(lobbyPlayer == 2){
-    startGame(room);
+    startGame(room, client);
   }
 }
 
 
 
 
-function startGame(room){
-  socket.on(room).emit("startingSoon");
+function startGame(room,client){
+  client.to(room).emit("startingSoon");
     setTimeout(function(){
-      io.on(room).emit("startingNow");     //Standardwerte von chicks vereinbaren
+      io.to(room).emit("startingNow");     //Standardwerte von chicks vereinbaren
     }, 5000);
 
-    setIntervall(updateChicks(room),1000);
+    setInterval(function(){updateChicks(room)},1000);
 }
 
 
