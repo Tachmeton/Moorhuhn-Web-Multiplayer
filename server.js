@@ -13,7 +13,7 @@ let lobbyPlayer = 0;
 
 lobbyZaehlerStartet = false;
 
-let rooms = [];
+let rooms = {};
 
 var chicks = [];
 
@@ -49,10 +49,11 @@ io.on('connection', (client) => {
       let newRoom = {
         id: room,
         joinedPlayer: 1,
-        player: [chicken]
+        player: [chicken],
+        startRoom: null
       };
 
-      rooms.push(newRoom);
+      rooms[room] = newRoom;
       
       //Success
       console.log(client.id + " joined room" + room);
@@ -63,10 +64,8 @@ io.on('connection', (client) => {
 
       client.join(room);
 
-      //rooms durchgehen joinedPlayer erhöhen
-      rooms.forEach(function(element){
-        if(element.id == room){
-          element.joinedPlayer += 1;
+        if(rooms[room] != null){
+          rooms[room].joinedPlayer += 1;
 
           let chicken = {
             id: client.id,
@@ -75,9 +74,8 @@ io.on('connection', (client) => {
             direction: "w"
           };
 
-          element.player.push(chicken);
+          rooms[room].player.push(chicken);
         }
-      });
       //Success
       console.log(client.id + "joined room" + room);
       client.emit("joined");
@@ -102,7 +100,7 @@ io.on('connection', (client) => {
     
 
     if(!lobbyZaehlerStartet){
-      setInterval(function(){waitonLobbyFull(room,client)},3000);
+      rooms[room].startRoom = setInterval(function(){waitonLobbyFull(room,client)},3000);
       lobbyZaehlerStartet = true;
     }
     lobbyPlayer +=1;
@@ -110,23 +108,17 @@ io.on('connection', (client) => {
   })
 });
 
-//https://socket.io/docs/rooms-and-namespaces/
-
 function roomFull(room){
 
   let roomState = 0;
   //0 ist kein Room, 1 room noch free aber nicht erster, 2 room full
 
-  let i = 0;
-  while(i < rooms.length && roomState === 0){
-    console.log("Room Id: " + rooms[i].id);
-    if(rooms[i].id === room){
-      console.log("joined Player: " + rooms[i].joinedPlayer);
-      if(rooms[i].joinedPlayer < 2){
-        roomState = 1;
-      }else{
-        roomState = 2;
-      }
+  if(rooms[room] != null){
+    console.log("joined Player: " + rooms[room].joinedPlayer);
+    if(rooms[room].joinedPlayer < 2){
+      roomState = 1;
+    }else{
+      roomState = 2;
     }
   }
 
@@ -172,8 +164,9 @@ function roomFull(room){
 
 
 function waitonLobbyFull(room, client){
-  if(lobbyPlayer == 2){
+  if(rooms[room] != null && rooms[room].joinedPlayer == 2){
     startGame(room, client);
+    clearInterval(rooms[room].startRoom);
   }
 }
 
@@ -181,6 +174,7 @@ function waitonLobbyFull(room, client){
 
 
 function startGame(room,client){
+  console.log("Room " + room + ": Starting soon!");
   client.to(room).emit("startingSoon");
     setTimeout(function(){
       io.to(room).emit("startingNow");     //Standardwerte von chicks vereinbaren
