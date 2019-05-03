@@ -88,6 +88,9 @@ $(document).ready(function() {
     document.getElementById("brutallyMurdered").onclick = function() {
         chicks[1].alive = false;
     };
+    document.getElementById("joinRoom").onclick = function(){
+        socket.emit("joinRoom");
+    };
 
     // register keypresses
     document.onkeydown = function(e){
