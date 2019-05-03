@@ -1,10 +1,17 @@
 const express = require('express');
 const app = express();
-const socket = require('socket.io');
-const server = app.listen(3000, function() {
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
+
+
+//const socket = require('socket.io');
+//const server = app.listen(3000, function() {
+//  console.log("server now listening on port 3000");
+//});
+
+server.listen(3000, function() {
   console.log("server now listening on port 3000");
 });
-const io = require('socket.io')(server);
 
 app.use(express.static("static"));
 
@@ -31,7 +38,7 @@ io.on('connection', (client) => {
 
 
   client.on('joinRoom', room => {
-    
+
     //Room gibts/ voll?
     let roomthere = roomFull(room);
     console.log(roomthere + "  " + client.id);
@@ -54,7 +61,7 @@ io.on('connection', (client) => {
       };
 
       rooms[room] = newRoom;
-      
+
       //Success
       console.log(client.id + " joined room" + room);
       client.emit("joined");
@@ -96,8 +103,8 @@ io.on('connection', (client) => {
     }
 
 
-    
-    
+
+
 
     if(!lobbyZaehlerStartet){
       rooms[room].startRoom = setInterval(function(){waitonLobbyFull(room,client)},3000);
@@ -185,5 +192,5 @@ function startGame(room,client){
 
 
 function updateChicks(room){
-  
+
 }

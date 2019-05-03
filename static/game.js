@@ -94,8 +94,8 @@ $(document).ready(function() {
         sendChickControl(e, game);
     };
 
+    const socket = io.connect('http://localhost:3000');
 
-    const socket = io('http://localhost');
     socket.on('connect', function() {
         console.log("socket connection established");
     });
@@ -157,6 +157,8 @@ $(document).ready(function() {
         }
         else if (e.keyCode == '39') { // right key
             direction = 'e';
+        }else {
+            return; //other keys ignored
         }
 
         // only emit to server if direction changed
