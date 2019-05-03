@@ -71,10 +71,6 @@ $(document).ready(function() {
     // register mouse click
     document.getElementById("game").onclick = sendHunterShot;
     document.getElementById("countdown").onclick = function(){console.log("countdown clicked");game.startCountdown(COUNTDOWN_TIME)};
-<<<<<<< HEAD
-    document.getElementById("start").onclick = function(){game.startGame(chicks)};
-    document.getElementById("join Room").onclick = function(){game.joinRoom()};
-=======
     document.getElementById("start").onclick = function(){
         game.startGame({
             chicks: chicks,
@@ -93,14 +89,13 @@ $(document).ready(function() {
         chicks[1].alive = false;
     };
 
->>>>>>> franz
-
-
     // register keypresses
     document.onkeydown = function(e){
         sendChickControl(e, game);
     };
 
+
+    const socket = io('http://localhost');
     socket.on('connect', function() {
         console.log("socket connection established");
     });
