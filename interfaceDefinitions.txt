@@ -4,11 +4,16 @@ socketio:
     empty
 
 'startingNow': // sent from server
+JSON Object:
 array of chicks
     -id
     -x
     -y
     -direction
+time left in seconds
+role of player
+(myChickenId)
+(bulletsLeft)
 
 'updateChick': // sent from server
 single chick object
@@ -23,18 +28,21 @@ array of all chicks with following attributes
     -x
     -y
     -direction
+    -lives
 
-'killReviveChicken': // sent from server
+'killChick': // sent from server
 chicken object with attributes
     -id
-    -alive           // alive=false means chicken is dead
-
 'chickInput': // sent from client   note: server should not rely on sent id here
 single chick object
     -id
     -x
     -y
     -direction
+
+'crosshairPosition': // sent from server; periodically sends hunters current crosshair position
+    -x
+    -y
 
 'hunterShot': // sent from client
 coordinates of shot on canvas

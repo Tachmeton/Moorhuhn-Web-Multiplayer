@@ -2,10 +2,7 @@ questions to answer:
     -what happens with dead chicken???
 
 stuff todo:
-    -chicken to right and then down/up resets chicken picture to default :(
-    -add shooter fade for chicken view
-    -add time on top right corner
-    -add magazine for shooter
     -add something like a score on top left
     -chicken animation?
-    -ctx.globalAlpha = 0.4; for opacity change on dieing chicken :(
+    -maybe change bullet color
+    -will properties like alive and or animations be overwritte by syncChicks event?
