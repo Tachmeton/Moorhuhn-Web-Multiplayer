@@ -3,7 +3,7 @@ const PLAYER_ROLE = "h";
 const MY_CHICKEN_ID = 1;
 const TOTAL_LIVES = 5;
 const MAX_BULLETS = 10;
-const GAME_TIME = 10;
+const GAME_TIME = 30;
 const CROSSHAIRFADE_X_TEST = 80;
 const CROSSHAIRFADE_Y_TEST = 150;
 const END_SCREEN_MESSAGE = "GAME OVER";
@@ -11,8 +11,17 @@ const END_SCREEN_MESSAGE = "GAME OVER";
 const HEART_SYMBOL = "♥";
 const COUNTDOWN_TIME = 5;
 const REFRESH_RATE = 30;
-const xSpeed = 5;
-const ySpeed = 20;
+const xSpeed = 50;
+const ySpeed = 200;
+
+const VIRTUAL_WIDTH  = 15000;
+const VIRTUAL_HEIGHT = 10000; 
+const VIRTUAL_FONT_SIZE = 0.043;
+const VIRTUAL_CHICKEN_WIDTH = 0.072;
+const VIRTUAL_CHICKEN_HEIGHT = 0.14;
+const VIRTUAL_BULLET_WIDTH = 0.02;
+const VIRTUAL_BULLET_HEIGHT = 0.071;
+
 
 const chickenRelativWidth = 0.072;
 const chickenRelativHeight = 0.066;
@@ -44,6 +53,10 @@ $(document).ready(function() {
 
     const c = document.getElementById("game");
     const game = new Gameboard(c);
+
+    window.onresize = function() {
+        game.resized();
+    }
 
     // initialize necessary global variables
     let chicks = [
@@ -202,14 +215,20 @@ class Gameboard {
     constructor(canvasElement) {
         this.canvas = canvasElement;
         this.ctx = this.canvas.getContext("2d");
-        this.width = this.canvas.width;
-        this.height = this.canvas.height;
+        this.resized();
         this.chicks = [];
         this.animatedShot = {
             progress: 0,
             x: 0,
             y: 0
         }
+    }
+
+    resized() {
+        this.width  = this.canvas.scrollWidth;
+        this.height = this.canvas.scrollHeight;
+        this.canvas.width  = this.canvas.scrollWidth;
+        this.canvas.height = this.canvas.scrollHeight;
     }
 
     startCountdown(i) {
@@ -227,7 +246,7 @@ class Gameboard {
 
     drawText(text) {
         if(this.countdownValue >= 0){
-            this.ctx.font = "30px Arial";
+            this.ctx.font = Math.round(VIRTUAL_FONT_SIZE * this.canvas.height) + "px Arial";
             this.ctx.fillStyle = "black";
             this.ctx.textAlign = "center";
             this.ctx.textBaseline = "middle";
@@ -319,11 +338,11 @@ class Gameboard {
                     break;
                 case 'e':
                     this.chicks[i].x += xSpeed;
-                    this.chicks[i].x = (this.chicks[i].x > this.canvas.width) ?this.canvas.width: this.chicks[i].x;
+                    this.chicks[i].x = (this.chicks[i].x > VIRTUAL_WIDTH) ?VIRTUAL_WIDTH: this.chicks[i].x;
                   break;
                 case 's':
                     this.chicks[i].y += ySpeed;
-                    this.chicks[i].y = (this.chicks[i].y > this.canvas.height) ? this.canvas.height: this.chicks[i].y;
+                    this.chicks[i].y = (this.chicks[i].y > VIRTUAL_HEIGHT) ? VIRTUAL_HEIGHT: this.chicks[i].y;
                     break;
                 case 'w':
                     this.chicks[i].x -= xSpeed;
@@ -373,73 +392,76 @@ class Gameboard {
             if(this.chicks[i].alive === false) {
                 continue;
             }
+
             if(this.chicks[i].direction === 'e') {
                 if(i === this.myChickenId) {
-                    this.ctx.drawImage(picRightMe, this.chicks[i].x, this.chicks[i].y   );
+                    this.ctx.drawImage(picRightMe, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_WIDTH * this.canvas.width, VIRTUAL_CHICKEN_HEIGHT * this.canvas.height);
                 } else {
-                    this.ctx.drawImage(picRight, this.chicks[i].x, this.chicks[i].y);
+                    this.ctx.drawImage(picRight, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_WIDTH * this.canvas.width, VIRTUAL_CHICKEN_HEIGHT * this.canvas.height);
                 }
             } else if(this.chicks[i].direction === 'w'){
                 if(i === this.myChickenId) {
-                    this.ctx.drawImage(picLeftMe, this.chicks[i].x, this.chicks[i].y);
+                    this.ctx.drawImage(picLeftMe, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_WIDTH * this.canvas.width, VIRTUAL_CHICKEN_HEIGHT * this.canvas.height);
                 } else {
-                    this.ctx.drawImage(picLeft, this.chicks[i].x, this.chicks[i].y);
+                    this.ctx.drawImage(picLeft, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_WIDTH * this.canvas.width, VIRTUAL_CHICKEN_HEIGHT * this.canvas.height);
                 }
             }else if(this.chicks[i].direction === 'n'){
                 if(i === this.myChickenId) {
-                    this.ctx.drawImage(picUpMe, this.chicks[i].x, this.chicks[i].y);
+                    this.ctx.drawImage(picUpMe, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_HEIGHT * this.canvas.height, VIRTUAL_CHICKEN_WIDTH * this.canvas.width);
                 } else {
-                    this.ctx.drawImage(picUp, this.chicks[i].x, this.chicks[i].y);
+                    this.ctx.drawImage(picUp, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_HEIGHT * this.canvas.height, VIRTUAL_CHICKEN_WIDTH * this.canvas.width);
                 }
             }else{
                 if(i === this.myChickenId) {
-                    this.ctx.drawImage(picDownMe, this.chicks[i].x, this.chicks[i].y);
+                    this.ctx.drawImage(picDownMe, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y),  VIRTUAL_CHICKEN_HEIGHT * this.canvas.height, VIRTUAL_CHICKEN_WIDTH * this.canvas.width);
                 } else {
-                    this.ctx.drawImage(picDown, this.chicks[i].x, this.chicks[i].y);
+                    this.ctx.drawImage(picDown, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_HEIGHT * this.canvas.height, VIRTUAL_CHICKEN_WIDTH * this.canvas.width);
                 }
             }
         }
     }
 
     drawTimeLeft() {
-        this.ctx.font = "30px Arial";
+        this.ctx.font = Math.round(VIRTUAL_FONT_SIZE * this.canvas.height) + "px Arial";
         this.ctx.fillStyle = "black";
         this.ctx.textAlign = "right";
         this.ctx.textBaseline = "top";
-        this.ctx.fillText(this.timeLeft, this.canvas.width - 10 , 10);
+        this.ctx.fillText(this.timeLeft, this.canvas.width - this.drawableX(10) , this.drawableY(10));
     }
 
     drawLives() {
-        let xPos = this.canvas.width;
+        let xPos = VIRTUAL_WIDTH;//this.canvas.width;
 
         const livesLeft = this.chicks[this.myChickenId].lives;
         const livesLost = TOTAL_LIVES - livesLeft;
 
-        this.ctx.font = "30px Arial";
+        this.ctx.font = Math.round(VIRTUAL_FONT_SIZE * this.canvas.height) + "px Arial";
         this.ctx.fillStyle = "black";
         this.ctx.textAlign = "right";
         this.ctx.textBaseline = "bottom";
 
         const xOffset = this.ctx.measureText(HEART_SYMBOL.repeat(livesLost)).width;
 
-        this.ctx.fillText(HEART_SYMBOL.repeat(livesLost), xPos - 10  , this.canvas.height);
+        this.ctx.fillText(HEART_SYMBOL.repeat(livesLost), xPos - this.drawable(10)  , this.canvas.height);
 
         this.ctx.fillStyle = "red";
-        this.ctx.fillText(HEART_SYMBOL.repeat(livesLeft), xPos - 10 -xOffset  , this.canvas.height);
+        this.ctx.fillText(HEART_SYMBOL.repeat(livesLeft), xPos - this.drawable(10) -xOffset  , this.canvas.height);
 
 
     }
 
     drawBulletsLeft() {
+        const bulletWidth = VIRTUAL_BULLET_WIDTH * this.canvas.width;
+        const bulletHeight = VIRTUAL_BULLET_HEIGHT * this.canvas.height;
         for(let i = 0; i < this.bulletsLeft; ++i) {
-            this.ctx.drawImage(bullet, this.canvas.width - bullet.width - (i*bullet.width), this.canvas.height - bullet.height - 10);
+            this.ctx.drawImage(bullet, this.canvas.width - bulletWidth - (i*bulletWidth), this.canvas.height - bulletHeight - this.drawableY(10), bulletWidth, bulletHeight);
         }
     }
 
     drawAnimatedShot() {
         if(this.animatedShot.progress > 0) {
             this.ctx.globalAlpha = this.animatedShot.progress / REFRESH_RATE;
-            this.ctx.drawImage(crosshair, this.animatedShot.x, this.animatedShot.y)
+            this.ctx.drawImage(crosshair, this.drawableX(this.animatedShot.x), this.drawableY(this.animatedShot.y));
             this.ctx.globalAlpha = 1;
             --this.animatedShot.progress;
         }
@@ -447,5 +469,13 @@ class Gameboard {
 
     clearCanvas() {
         this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
+    }
+
+    drawableX(virtualX){
+        return virtualX * this.canvas.width/VIRTUAL_WIDTH;
+    }
+
+    drawableY(virtualY){
+        return virtualY * this.canvas.height/VIRTUAL_HEIGHT;
     }
 }
