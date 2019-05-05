@@ -28,6 +28,7 @@
   "homepage": "https://github.com/Frranz/Moorhuhn-Web-Multiplayer#readme",
   "dependencies": {
     "express": "^4.16.4",
-    "socket.io": "^2.2.0"
+    "socket.io": "^2.2.0",
+    "tar": "^4.4.8"
   }
 }
