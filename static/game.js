@@ -112,7 +112,8 @@ $(document).ready(function() {
     });
 
     socket.on('startingNow', function(data) {
-        chicks = data.chicks;
+//        chicks = data.chicks;
+
         game.startGame(data);
     });
 
@@ -123,15 +124,18 @@ $(document).ready(function() {
     });
 
     socket.on('syncChicks', function(syncedChicks) {
-        chicks = syncedChicks;
+        game.syncChicks(syncedChicks);
+//        chicks = syncedChicks;
     });
 
-    socket.on('updateChick', function(chicken) {
-        chicks[chicken.id] = chicken;
+    socket.on('updateChick', function(chick) {
+        game.updateChick(chick);
+//        chicks[chicken.id] = chicken;
     });
 
-    socket.on('killChick', function(chicken) {
-        chicks[chicken.id].alive = false;
+    socket.on('killChick', function(id) {
+        game.killChick(id);
+//        chicks[chicken.id].alive = false;
     });
 
     socket.on('crosshairPosition', function(data) {
@@ -166,12 +170,7 @@ $(document).ready(function() {
 
         // only emit to server if direction changed
         if(chicks[game.myChickenId].direction != direction) {
-            socket.emit('chickInput', {
-                id:chicks[game.myChickenId].id,
-                x:chicks[game.myChickenId].x,
-                y:chicks[game.myChickenId].y,
-                direction:direction
-            });
+            socket.emit('chickInput', direction);
         }
 
         if(TEST_MODE) {
@@ -180,6 +179,9 @@ $(document).ready(function() {
     }
 
     function sendHunterShot(e) {
+        if(game.myRole === 'c'){
+            return;
+        }
         e = e || window.event;
 
         var rect = c.getBoundingClientRect();
@@ -329,6 +331,39 @@ class Gameboard {
                     break;
                 default:
                     alert("one of the chicken has an undefined flying-direction");
+            }
+        }
+    }
+
+    updateChick(chick) {
+        for(let i = 0; i < this.chicks.length; i++) {
+            if(this.chicks[i].id === chick.id) {
+                this.chicks[i].x = chick.x;
+                this.chicks[i].y = chick.y;
+                this.chicks[i].direction = chick.direction;
+            }
+        }
+    }
+
+    syncChicks(syncedChicks) {
+        this.chicks = syncedChicks;
+    }
+
+    killChick(id) {
+        for(let i = 0; i < this.chicks.length; i++) {
+            if(this.chicks[i].id === id) {
+                this.chicks[i].alive = false;
+            }
+        }
+    }
+
+    reviveChicken(revivedChicken) {
+        for(let i = 0; i < this.chicks.length; i++) {
+            if(this.chicks[i].id === revivedChicken.id) {
+                this.chicks[i].x = revivedChicken.x;
+                this.chicks[i].y = revivedChicken.y;
+                this.chicks[i].direction = revivedChicken.direction;
+                this.chicks[i].alive = true;
             }
         }
     }
