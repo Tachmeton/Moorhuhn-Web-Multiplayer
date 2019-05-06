@@ -30,6 +30,7 @@ array of all chicks with following attributes
     -y
     -direction
     -alive
+    -li
 
 'killChick': // sent from server
 -id : id of killed chicken
@@ -45,7 +46,7 @@ chicken object with attributes:
 -direction
 
 'crosshairPosition': // sent from server; periodically sends hunters current crosshair position
-object with following attributes: 
+object with following attributes:
     -x
     -y
 
