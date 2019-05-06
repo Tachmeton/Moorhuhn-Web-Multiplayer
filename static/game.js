@@ -1,4 +1,4 @@
-const TEST_MODE = true;
+const TEST_MODE = false;
 const PLAYER_ROLE = "h";
 const MY_CHICKEN_ID = 1;
 const TOTAL_LIVES = 5;
@@ -11,8 +11,8 @@ const END_SCREEN_MESSAGE = "GAME OVER";
 const HEART_SYMBOL = "♥";
 const COUNTDOWN_TIME = 5;
 const REFRESH_RATE = 30;
-const xSpeed = 50;
-const ySpeed = 200;
+const xSpeed = 200;
+const ySpeed = 2400;
 
 const VIRTUAL_WIDTH  = 15000;
 const VIRTUAL_HEIGHT = 10000; 
@@ -102,7 +102,7 @@ $(document).ready(function() {
         chicks[1].alive = false;
     };
     document.getElementById("joinRoom").onclick = function(){
-        socket.emit("joinRoom", {room : 1});
+        socket.emit("joinRoom", (1));
     };
 
     // register keypresses
@@ -290,7 +290,10 @@ class Gameboard {
             clearInterval(this.timeLeftInterval);
             return;
         };
-        this.updateDirections(); // uncomment when server is working
+
+        if(TEST_MODE) {
+            this.updateDirections(); // uncomment when server is working
+        }
         this.updateChicks();
         this.drawChicks();
         this.drawAnimatedShot();

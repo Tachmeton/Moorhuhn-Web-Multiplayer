@@ -3,10 +3,10 @@ const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
-const xSpeed = 5;
-const ySpeed = 20;
-const FeldLaengeX = 16000;
-const FeldLaengeY = 9000;
+const xSpeed = 50;
+const ySpeed = 200;
+const FeldLaengeX = 15000;
+const FeldLaengeY = 10000;
 
 server.listen(3000, function() {
   console.log("server now listening on port 3000");
@@ -45,7 +45,9 @@ io.on('connection', (client) => {
         id: client.id,
         x: Math.round(Math.random() * 16000),
         y: Math.round(Math.random() * 9000),
-        direction: "w"
+        direction: "w",
+        lives: 3,
+        alive: true
       };
 
       let newRoom = {
@@ -184,11 +186,16 @@ function startGame(room,client){
   console.log("Room " + room + ": Starting soon!");
   io.to(room).emit("startingSoon", (5));
     setTimeout(function(){
-      io.to(room).emit("startingNow");
+      io.to(room).emit("startingNow", {
+        chicks: rooms[room].player,
+        timeLeft: rooms[room].TimeLeft
+      });
 
       setInterval(function(){
-        updateChicks(room,client)
-      },1000);
+        if(rooms[room].timeLeft < 0){
+          updateChicks(room,client)
+        }
+      },30);
   
       setInterval(function(){
           --rooms[room].TimeLeft;
@@ -200,26 +207,28 @@ function startGame(room,client){
 
 function updateChicks(room, client){
   for(let i = 0; i < rooms[room].player.length; i++) {
-    switch(rooms[room].player.direction) {
+    switch(rooms[room].player[i].direction) {
         case 'n':
-            rooms[room].player.y -= ySpeed;
-            rooms[room].player.y  = (rooms[room].player.y  < 0) ? 0: rooms[room].player.y;
+            rooms[room].player[i].y -= ySpeed;
+            rooms[room].player[i].y  = (rooms[room].player[i].y  < 0) ? 0: rooms[room].player[i].y;
             break;
         case 'e':
-            rooms[room].player.x += xSpeed;
-            rooms[room].player.x = (rooms[room].player.x > FeldLaengeX) ?FeldLaengeX: rooms[room].player.x;
+            rooms[room].player[i].x += xSpeed;
+            rooms[room].player[i].x = (rooms[room].player[i].x > FeldLaengeX) ?FeldLaengeX: rooms[room].player[i].x;
           break;
         case 's':
-            rooms[room].player.y += ySpeed;
-            rooms[room].player.y = (rooms[room].player.y > FeldLaengeY) ? FeldLaengeY: rooms[room].player.y;
+            rooms[room].player[i].y += ySpeed;
+            rooms[room].player[i].y = (rooms[room].player[i].y > FeldLaengeY) ? FeldLaengeY: rooms[room].player[i].y;
             break;
         case 'w':
-            rooms[room].player.x -= xSpeed;
-            rooms[room].player.x  = (rooms[room].player.x  < 0) ? 0: rooms[room].player.x;
+            rooms[room].player[i].x -= xSpeed;
+            rooms[room].player[i].x  = (rooms[room].player[i].x  < 0) ? 0: rooms[room].player[i].x;
             break;
         default:
             //ERROR
+        break;
     }
+    console.log(rooms[room].player[i].x + ", " + rooms[room].player[i].y);
   }
 
   client.to(room).emit("syncChicks", (rooms[room].player));
