@@ -3,11 +3,10 @@ const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
-
-//const socket = require('socket.io');
-//const server = app.listen(3000, function() {
-//  console.log("server now listening on port 3000");
-//});
+const xSpeed = 5;
+const ySpeed = 20;
+const FeldLaengeX = 16000;
+const FeldLaengeY = 9000;
 
 server.listen(3000, function() {
   console.log("server now listening on port 3000");
@@ -15,14 +14,7 @@ server.listen(3000, function() {
 
 app.use(express.static("static"));
 
-
-let lobbyPlayer = 0;
-
-lobbyZaehlerStartet = false;
-
 let rooms = {};
-
-var chicks = [];
 
 app.get("/", function(req, res) {
     res.sendFile(__dirname + "/index.html");
@@ -36,12 +28,15 @@ io.on('connection', (client) => {
   client.on('event', data => { /* … */ });
   client.on('disconnect', () => { /* … */ });
 
-
-  client.on('joinRoom', room => {
+  
+  client.on('joinRoom', (room) => {
+    //gute Eingabe?
+    if(room != undefined){
 
     //Room gibts/ voll?
     let roomthere = roomFull(room);
     console.log(roomthere + "  " + client.id);
+
     switch(roomthere){
     case "first in Room":
       client.join(room);
@@ -57,14 +52,17 @@ io.on('connection', (client) => {
         id: room,
         joinedPlayer: 1,
         player: [chicken],
-        startRoom: null
+        updateChicksIntervall: null,
+        startRoomIntervall: null,
+        TimeLeft: 60,
+        TimeLeftIntervall: null
       };
 
       rooms[room] = newRoom;
 
       //Success
       console.log(client.id + " joined room" + room);
-      client.emit("joined");
+      //client.emit("joined");
       break;
 
       case "Room exists and space left":
@@ -78,14 +76,15 @@ io.on('connection', (client) => {
             id: client.id,
             x: Math.round(Math.random() * 16000),
             y: Math.round(Math.random() * 9000),
-            direction: "w"
+            direction: "w",
+            lives: 10
           };
 
           rooms[room].player.push(chicken);
         }
       //Success
       console.log(client.id + "joined room" + room);
-      client.emit("joined");
+      //client.emit("joined");
       break;
 
       case "Room exists but full":
@@ -102,17 +101,17 @@ io.on('connection', (client) => {
 
     }
 
-
-
-
-
-    if(!lobbyZaehlerStartet){
-      rooms[room].startRoom = setInterval(function(){waitonLobbyFull(room,client)},3000);
-      lobbyZaehlerStartet = true;
+    if(rooms[room].joinedPlayer === 1){
+      console.log(room + "zaehler");
+      rooms[room].startRoomInterval = setInterval(function(){waitonLobbyFull(room,client)},3000);
     }
-    lobbyPlayer +=1;
+
+  }else{
+    console.log(client.id + " tried to join Room but it is undefined!");
+  }
 
   })
+
 });
 
 function roomFull(room){
@@ -171,9 +170,10 @@ function roomFull(room){
 
 
 function waitonLobbyFull(room, client){
+  console.log(room + " is waiting!");
   if(rooms[room] != null && rooms[room].joinedPlayer == 2){
     startGame(room, client);
-    clearInterval(rooms[room].startRoom);
+    clearInterval(rooms[room].startRoomInterval);
   }
 }
 
@@ -182,15 +182,45 @@ function waitonLobbyFull(room, client){
 
 function startGame(room,client){
   console.log("Room " + room + ": Starting soon!");
-  client.to(room).emit("startingSoon");
+  io.to(room).emit("startingSoon", (5));
     setTimeout(function(){
-      io.to(room).emit("startingNow");     //Standardwerte von chicks vereinbaren
-    }, 5000);
+      io.to(room).emit("startingNow");
 
-    setInterval(function(){updateChicks(room)},1000);
+      setInterval(function(){
+        updateChicks(room,client)
+      },1000);
+  
+      setInterval(function(){
+          --rooms[room].TimeLeft;
+      },1000);
+
+    }, 5000);
 }
 
 
-function updateChicks(room){
+function updateChicks(room, client){
+  for(let i = 0; i < rooms[room].player.length; i++) {
+    switch(rooms[room].player.direction) {
+        case 'n':
+            rooms[room].player.y -= ySpeed;
+            rooms[room].player.y  = (rooms[room].player.y  < 0) ? 0: rooms[room].player.y;
+            break;
+        case 'e':
+            rooms[room].player.x += xSpeed;
+            rooms[room].player.x = (rooms[room].player.x > FeldLaengeX) ?FeldLaengeX: rooms[room].player.x;
+          break;
+        case 's':
+            rooms[room].player.y += ySpeed;
+            rooms[room].player.y = (rooms[room].player.y > FeldLaengeY) ? FeldLaengeY: rooms[room].player.y;
+            break;
+        case 'w':
+            rooms[room].player.x -= xSpeed;
+            rooms[room].player.x  = (rooms[room].player.x  < 0) ? 0: rooms[room].player.x;
+            break;
+        default:
+            //ERROR
+    }
+  }
 
+  client.to(room).emit("syncChicks", (rooms[room].player));
 }
