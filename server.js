@@ -4,12 +4,12 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
 const xSpeed = 50;
-const ySpeed = 200;
+const ySpeed = 50;
 const FeldLaengeX = 15000;
 const FeldLaengeY = 10000;
 
 server.listen(3000, function() {
-  console.log("server now listening on port 3000");
+console.log("server now listening on port 3000");
 });
 
 app.use(express.static("static"));
@@ -21,15 +21,15 @@ app.get("/", function(req, res) {
 });
 
 io.on('connection', (client) => {
-  console.log("New Connection: " + client.id);
-  //socket.emit("connect");
+console.log("New Connection: " + client.id);
+//socket.emit("connect");
 
 
-  client.on('event', data => { /* … */ });
-  client.on('disconnect', () => { /* … */ });
+client.on('event', data => { /* … */ });
+client.on('disconnect', () => { /* … */ });
 
-  
-  client.on('joinRoom', (room) => {
+
+client.on('joinRoom', (room) => {
     //gute Eingabe?
     if(room != undefined){
 
@@ -39,100 +39,128 @@ io.on('connection', (client) => {
 
     switch(roomthere){
     case "first in Room":
-      client.join(room);
+    client.join(room);
 
-      let chicken = {
+    let chicken = {
         id: client.id,
-        x: Math.round(Math.random() * 16000),
-        y: Math.round(Math.random() * 9000),
+        x: Math.round(Math.random() * FeldLaengeX),
+        y: Math.round(Math.random() * FeldLaengeY),
         direction: "w",
         lives: 3,
-        alive: true
-      };
+        alive: true,
+        role: "c"
+    };
 
-      let newRoom = {
+    let newRoom = {
         id: room,
         joinedPlayer: 1,
         player: [chicken],
-        updateChicksIntervall: null,
+        updateChicksInterval: null,
         startRoomIntervall: null,
-        TimeLeft: 60,
-        TimeLeftIntervall: null
-      };
+        timeLeft: 1000,
+        timeLeftInterval: null,
+        syncChicksInterval: null
+    };
 
-      rooms[room] = newRoom;
+    rooms[room] = newRoom;
 
-      //Success
-      console.log(client.id + " joined room" + room);
-      //client.emit("joined");
-      break;
+    //Success
+    console.log(client.id + " joined room" + room);
+    //client.emit("joined");
+    break;
 
-      case "Room exists and space left":
+    case "Room exists and space left":
 
-      client.join(room);
+    client.join(room);
 
         if(rooms[room] != null){
-          rooms[room].joinedPlayer += 1;
+        rooms[room].joinedPlayer += 1;
 
-          let chicken = {
+        let chicken = {
             id: client.id,
-            x: Math.round(Math.random() * 16000),
-            y: Math.round(Math.random() * 9000),
+            x: Math.round(Math.random() * FeldLaengeX),
+            y: Math.round(Math.random() * FeldLaengeY),
             direction: "w",
-            lives: 10
-          };
+            lives: 3,
+            alive: true,
+            role: "c"
+        };
 
-          rooms[room].player.push(chicken);
+        rooms[room].player.push(chicken);
         }
-      //Success
-      console.log(client.id + "joined room" + room);
-      //client.emit("joined");
-      break;
+    //Success
+    console.log(client.id + "joined room" + room);
+    //client.emit("joined");
+    break;
 
-      case "Room exists but full":
+    case "Room exists but full":
 
-      //Error zurückgeben
-      console.log(client.id + " could not join room " + room);
-      break;
+    //Error zurückgeben
+    console.log(client.id + " could not join room " + room);
+    break;
 
-      default:
-      //Error
-      console.log("Default Case Join Room");
-      console.log(client.id + " could not join room " + room);
-      break
+    default:
+    //Error
+    console.log("Default Case Join Room");
+    console.log(client.id + " could not join room " + room);
+    break
 
     }
 
     if(rooms[room].joinedPlayer === 1){
-      console.log(room + "zaehler");
-      rooms[room].startRoomInterval = setInterval(function(){waitonLobbyFull(room,client)},3000);
+    console.log(room + "zaehler");
+    rooms[room].startRoomInterval = setInterval(function(){waitonLobbyFull(room,client)},3000);
     }
 
-  }else{
+}else{
     console.log(client.id + " tried to join Room but it is undefined!");
-  }
+}
 
-  })
+})
+
+client.on('chickInput', (direction) => {
+    //console.log("Direction: " + direction);
+
+    if(direction === 'n' || direction === 'e' || direction === 's' || direction === 'w'){
+
+        let room = Object.keys(client.rooms).filter(item => item!=client.id);
+
+        for(let i = 0; i < rooms[room].player.length; ++i){
+            if(rooms[room].player[i].id === client.id){
+                rooms[room].player[i].direction = direction;
+
+                io.to(room).emit("updateChick", {
+                    id: rooms[room].player[i].id,
+                    x: rooms[room].player[i].x,
+                    y: rooms[room].player[i].y,
+                    direction: rooms[room].player[i].direction
+                });
+            }
+        }
+    }else{
+        console.log("Client: " + client.id + "mit falscher Direction: " + direction);
+    }
+});
 
 });
 
 function roomFull(room){
 
-  let roomState = 0;
-  //0 ist kein Room, 1 room noch free aber nicht erster, 2 room full
+let roomState = 0;
+//0 ist kein Room, 1 room noch free aber nicht erster, 2 room full
 
-  if(rooms[room] != null){
+if(rooms[room] != null){
     console.log("joined Player: " + rooms[room].joinedPlayer);
     if(rooms[room].joinedPlayer < 2){
-      roomState = 1;
+    roomState = 1;
     }else{
-      roomState = 2;
+    roomState = 2;
     }
-  }
+}
 
-  console.log("roomState: " + roomState);
+console.log("roomState: " + roomState);
 
-  switch(roomState){
+switch(roomState){
     case 0:
     return "first in Room";
     break;
@@ -148,65 +176,82 @@ function roomFull(room){
     default:
     return "error --default";
     break;
-  }
+}
 
-  /*rooms.forEach(function(element){
+/*rooms.forEach(function(element){
     console.log(element.id + " == " + room);
     console.log(element.id == room);
     if(element.id == room){
 
-      if(element.joinedPlayer >= 2){
+    if(element.joinedPlayer >= 2){
         return "Room exists but full";
-      }else{
-        return "Room exists and space left";
-      }
-
     }else{
-      return "first in Room";
+        return "Room exists and space left";
     }
 
-  });
-  //Room existiert noch nicht
-  return "error";*/
+    }else{
+    return "first in Room";
+    }
+
+});
+//Room existiert noch nicht
+return "error";*/
 }
 
 
 function waitonLobbyFull(room, client){
-  console.log(room + " is waiting!");
-  if(rooms[room] != null && rooms[room].joinedPlayer == 2){
-    startGame(room, client);
-    clearInterval(rooms[room].startRoomInterval);
-  }
+    console.log(room + " is waiting!");
+    if(rooms[room] != null && rooms[room].joinedPlayer == 2){
+        startGame(room, client);
+        clearInterval(rooms[room].startRoomInterval);
+    }
 }
 
 
 
 
 function startGame(room,client){
-  console.log("Room " + room + ": Starting soon!");
-  io.to(room).emit("startingSoon", (5));
-    setTimeout(function(){
-      io.to(room).emit("startingNow", {
-        chicks: rooms[room].player,
-        timeLeft: rooms[room].TimeLeft
-      });
+    console.log("Room " + room + ": Starting soon!");
+    io.to(room).emit("startingSoon", (5));
 
-      setInterval(function(){
-        if(rooms[room].timeLeft < 0){
-          updateChicks(room,client)
+    for(let i = 0; i < rooms[room].player.length; ++i){
+        io.to(rooms[room].player[i].id).emit("assignRole", {
+            role: rooms[room].player[i].role,
+            chickenId: rooms[room].player[i].id
+        });
+    }
+
+        setTimeout(function(){
+            io.to(room).emit("startingNow", {
+            chicks: rooms[room].player,
+            timeLeft: rooms[room].timeLeft
+        });
+
+
+        rooms[room].updateChicksInterval = setInterval(function(){
+        if(rooms[room].timeLeft > 0){
+            updateChicks(room);
+        }else{
+            clearInterval(rooms[room].timeLeftInterval);
+            clearInterval(rooms[room].updateChicksInterval);
+            clearInterval(rooms[room].syncChicksInterval);
         }
-      },30);
-  
-      setInterval(function(){
-          --rooms[room].TimeLeft;
-      },1000);
+    },30);
+
+        rooms[room].syncChicksInterval = setInterval(function(){
+            client.to(room).emit("syncChicks", (rooms[room].player));
+        },500);
+
+    rooms[room].timeLeftInterval = setInterval(function(){
+            --rooms[room].timeLeft;
+    },1000);
 
     }, 5000);
 }
 
 
-function updateChicks(room, client){
-  for(let i = 0; i < rooms[room].player.length; i++) {
+function updateChicks(room){
+for(let i = 0; i < rooms[room].player.length; i++) {
     switch(rooms[room].player[i].direction) {
         case 'n':
             rooms[room].player[i].y -= ySpeed;
@@ -215,7 +260,7 @@ function updateChicks(room, client){
         case 'e':
             rooms[room].player[i].x += xSpeed;
             rooms[room].player[i].x = (rooms[room].player[i].x > FeldLaengeX) ?FeldLaengeX: rooms[room].player[i].x;
-          break;
+        break;
         case 's':
             rooms[room].player[i].y += ySpeed;
             rooms[room].player[i].y = (rooms[room].player[i].y > FeldLaengeY) ? FeldLaengeY: rooms[room].player[i].y;
@@ -228,8 +273,6 @@ function updateChicks(room, client){
             //ERROR
         break;
     }
-    console.log(rooms[room].player[i].x + ", " + rooms[room].player[i].y);
-  }
-
-  client.to(room).emit("syncChicks", (rooms[room].player));
+    //console.log(rooms[room].player[i].x + ", " + rooms[room].player[i].y);
+}
 }

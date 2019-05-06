@@ -11,8 +11,8 @@ const END_SCREEN_MESSAGE = "GAME OVER";
 const HEART_SYMBOL = "♥";
 const COUNTDOWN_TIME = 5;
 const REFRESH_RATE = 30;
-const xSpeed = 200;
-const ySpeed = 2400;
+const xSpeed = 50;
+const ySpeed = 50;
 
 const VIRTUAL_WIDTH  = 15000;
 const VIRTUAL_HEIGHT = 10000;
@@ -57,7 +57,7 @@ $(document).ready(function() {
     window.onresize = function() {
         game.resized();
     }
-
+/*
     // initialize necessary global variables
     let chicks = [
         {
@@ -78,7 +78,7 @@ $(document).ready(function() {
             direction: 'w',
             lives: 5
         }
-    ];
+    ];*/
 
 
     // register mouse click
@@ -124,6 +124,10 @@ $(document).ready(function() {
         game.startCountdown(countDownTime);
     });
 
+    socket.on('assignRole', function(data) {
+        game.assignRole(data);
+    });
+
     socket.on('startingNow', function(data) {
 //        chicks = data.chicks;
 
@@ -164,6 +168,13 @@ $(document).ready(function() {
     // functions
     function sendChickControl(e, game) {
         e.preventDefault();
+
+        if(game.role !== 'c') {
+            return;
+        }
+
+        console.log("button pressed: " + e.keyCode);
+
         let direction;
         e = e || window.event;
         if (e.keyCode == '38') { // up key
@@ -181,8 +192,15 @@ $(document).ready(function() {
             return; //other keys ignored
         }
 
+        let myChickIndex;
+        for(let i = 0; i< game.chicks.length; i++) {
+            if(game.chicks[i].id === game.myChickenId) {
+                myChickIndex = i;
+            }
+        }
+
         // only emit to server if direction changed
-        if(chicks[game.myChickenId].direction != direction) {
+        if(game.chicks[myChickIndex].direction != direction) {
             socket.emit('chickInput', direction);
         }
 
@@ -221,7 +239,7 @@ class Gameboard {
             progress: 0,
             x: 0,
             y: 0
-        }
+        };
     }
 
     resized() {
@@ -254,18 +272,19 @@ class Gameboard {
         }
     }
 
+    assignRole(roleData) {
+        this.role = roleData.role;
+        if(this.role === 'c') {
+            this.myChickenId = roleData.chickenId;
+        } else {
+            this.bulletsLeft = roleData.bulletsLeft;
+        }
+    }
+
     startGame(game) {
         const thisSave = this;
         this.chicks = game.chicks;
         this.timeLeft = game.timeLeft;
-        this.myRole = game.role;
-
-        if(this.myRole === "h") {
-            $(this.canvas).css("cursor", "url('img/crosshair.png') 25 25 , auto");
-            this.bulletsLeft = game.bulletsLeft;
-        } else {
-            this.myChickenId = game.myChickenId;
-        }
 
         this.gameInterval = setInterval(function(){
             thisSave.gameLoop();
@@ -457,10 +476,10 @@ class Gameboard {
 
         const xOffset = this.ctx.measureText(HEART_SYMBOL.repeat(livesLost)).width;
 
-        this.ctx.fillText(HEART_SYMBOL.repeat(livesLost), xPos - this.drawable(10)  , this.canvas.height);
+        this.ctx.fillText(HEART_SYMBOL.repeat(livesLost), xPos - this.drawableX(10)  , this.canvas.height);
 
         this.ctx.fillStyle = "red";
-        this.ctx.fillText(HEART_SYMBOL.repeat(livesLeft), xPos - this.drawable(10) -xOffset  , this.canvas.height);
+        this.ctx.fillText(HEART_SYMBOL.repeat(livesLeft), xPos - this.drawableX(10) -xOffset  , this.canvas.height);
 
 
     }
