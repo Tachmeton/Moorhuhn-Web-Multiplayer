@@ -15,7 +15,7 @@ const xSpeed = 200;
 const ySpeed = 2400;
 
 const VIRTUAL_WIDTH  = 15000;
-const VIRTUAL_HEIGHT = 10000; 
+const VIRTUAL_HEIGHT = 10000;
 const VIRTUAL_FONT_SIZE = 0.043;
 const VIRTUAL_CHICKEN_WIDTH = 0.072;
 const VIRTUAL_CHICKEN_HEIGHT = 0.14;
@@ -434,8 +434,20 @@ class Gameboard {
 
     drawLives() {
         let xPos = VIRTUAL_WIDTH;//this.canvas.width;
+        let myChickIndex;
 
-        const livesLeft = this.chicks[this.myChickenId].lives;
+        for(let i = 0; i< this.chicks.length; i++) {
+            if(this.chicks[i].id === this.myChickenId) {
+                myChickIndex = i;
+            }
+        }
+
+        if(myChickIndex === null) {
+            console.log("error, mychickenid is not found in chicks array");
+            return;
+        }
+
+        const livesLeft = this.chicks[myChickIndex].lives;
         const livesLost = TOTAL_LIVES - livesLeft;
 
         this.ctx.font = Math.round(VIRTUAL_FONT_SIZE * this.canvas.height) + "px Arial";
