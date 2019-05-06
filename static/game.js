@@ -102,7 +102,7 @@ $(document).ready(function() {
         chicks[1].alive = false;
     };
     document.getElementById("joinRoom").onclick = function(){
-        socket.emit("joinRoom");
+        socket.emit("joinRoom", {room : 1});
     };
 
     // register keypresses
@@ -120,7 +120,7 @@ $(document).ready(function() {
         console.log("error @ establishing socket connection: " + message);
     });
 
-    socket.on('startingSoon', function() {
+    socket.on('startingSoon', function(countDownTime) {
         game.startCountdown(countDownTime);
     });
 
@@ -277,7 +277,7 @@ class Gameboard {
 
     /******************** */
     joinRoom(){
-        //joined Room 1 (wer hätte es gedacht?)
+        //joined Room 1 (wer hätte es gedacht? Ich nicht - Michi)
         socket.emit("joinRoom", "1");
     }
 
