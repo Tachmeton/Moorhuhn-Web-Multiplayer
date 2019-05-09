@@ -4,7 +4,7 @@ $('#login-card').on('click', '#login', function(e) {
         type: "POST",
         url: "http://localhost:3000/checkAuthentication",
         data: {
-            "username": $('#username').val(),
+            "user": $('#user').val(),
             "password": $('#password').val()
         },
         dataType: "json",
@@ -28,7 +28,6 @@ $('#login-card').on('click', '#create-account', function(e) {
         error: function(data){
             console.log("error");
             console.log(data);
-
         }
     });
 });
@@ -65,6 +64,7 @@ $('#login-card').on('click', '#register', function(e) {
         success: function() {
             navigatePage('main');
             alert("navigiere jetzt zu main");
+            $('#return-to-login').click();
         },
         error: function(error) {
             console.log(error);

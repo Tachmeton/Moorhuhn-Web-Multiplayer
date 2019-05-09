@@ -36,7 +36,6 @@ ON
  */
 app.post("/checkAuthentication", function(req,res) {
     try{
-
         login(req.body.user, req.body.password, function(credentialsCorrect) {
             if(credentialsCorrect) {
                 res.status(200).send("authentication successfull");
