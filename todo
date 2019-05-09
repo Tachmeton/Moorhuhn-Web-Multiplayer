@@ -6,3 +6,8 @@ stuff todo:
     -chicken animation?
     -maybe change bullet color
     -will properties like alive and or animations be overwritte by syncChicks event?
+
+
+ui: 
+    -anything
+    -load login via ajax

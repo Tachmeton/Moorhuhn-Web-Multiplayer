@@ -26,8 +26,7 @@ $('#login-card').on('click', '#create-account', function(e) {
             $('#login-card-body').replaceWith(data);
         },
         error: function(data){
-            console.log("error");
-            console.log(data);
+            console.log("error while loading /register.html");
         }
     });
 });
@@ -63,7 +62,6 @@ $('#login-card').on('click', '#register', function(e) {
         },
         success: function() {
             navigatePage('main');
-            alert("navigiere jetzt zu main");
             $('#return-to-login').click();
         },
         error: function(error) {
