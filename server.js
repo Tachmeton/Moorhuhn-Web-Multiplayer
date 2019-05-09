@@ -8,6 +8,9 @@ const ySpeed = 50;
 const FeldLaengeX = 15000;
 const FeldLaengeY = 10000;
 
+const VIRTUAL_CHICKEN_WIDTH = 0.072;
+const VIRTUAL_CHICKEN_HEIGHT = 0.14;
+
 server.listen(3000, function() {
 console.log("server now listening on port 3000");
 });
@@ -41,7 +44,7 @@ client.on('joinRoom', (room) => {
     case "first in Room":
     client.join(room);
 
-    let chicken = {
+    /*let chicken = {
         id: client.id,
         x: Math.round(Math.random() * FeldLaengeX),
         y: Math.round(Math.random() * FeldLaengeY),
@@ -49,12 +52,20 @@ client.on('joinRoom', (room) => {
         lives: 3,
         alive: true,
         role: "c"
-    };
+    };*/
+
+    let hunter = {
+        id: client.id,
+        kills: 0,
+        bullets: 10,
+        maxBullets: 10
+    }
 
     let newRoom = {
         id: room,
         joinedPlayer: 1,
-        player: [chicken],
+        player: [],
+        hunter: hunter,
         updateChicksInterval: null,
         startRoomIntervall: null,
         timeLeft: 1000,
@@ -82,8 +93,7 @@ client.on('joinRoom', (room) => {
             y: Math.round(Math.random() * FeldLaengeY),
             direction: "w",
             lives: 3,
-            alive: true,
-            role: "c"
+            alive: true
         };
 
         rooms[room].player.push(chicken);
@@ -142,7 +152,63 @@ client.on('chickInput', (direction) => {
     }
 });
 
+client.on('hunterShot', (coordinates) => {
+
+    let room = Object.keys(client.rooms).filter(item => item!=client.id);
+    console.log("room: " + room);
+    let chickenWidth = 0;
+    let chickenHeight = 0;
+
+    if(client.id === rooms[room].hunter.id){
+
+        for(let i = 0; i < rooms[room].player.length; ++i){
+
+            if(rooms[room].player[i].direction == 'w' || rooms[room].player[i].direction == 'e'){
+                chickenWidth = VIRTUAL_CHICKEN_WIDTH * FeldLaengeX;
+                chickenHeight = VIRTUAL_CHICKEN_HEIGHT * FeldLaengeY;
+            }else{
+                //umgedreht
+                chickenWidth = VIRTUAL_CHICKEN_HEIGHT * FeldLaengeY;
+                chickenHeight = VIRTUAL_CHICKEN_WIDTH * FeldLaengeX;
+            }
+
+            console.log("Rechnung x: " + coordinates.x + " - " + rooms[room].player[i].x);
+            console.log("Rechnung y: " + coordinates.y + " - " + rooms[room].player[i].y);
+
+            let xDifference = coordinates.x - rooms[room].player[i].x;
+            let yDifference = coordinates.y - rooms[room].player[i].y;
+
+            console.log("xDifference: " + xDifference);
+            console.log("yDifference: " + yDifference);
+
+            if(xDifference > 0 && xDifference < chickenWidth && yDifference > 0 && yDifference < chickenHeight){
+                console.log("Hit on " + rooms[room].chicken[i].id);
+                io.to(room).emit("killChick", rooms[room].player[i].id);
+                ++roomse[room].hunter.kills;
+                console.log(rooms[room].player[i].id  + " has been shot!");
+
+                rooms[room].player[i].x = Math.round(Math.random() * FeldLaengeX);
+                rooms[room].player[i].y = Math.round(Math.random() * FeldLaengeY);
+
+                io.to(room).emit("updateChick", {
+                    id: rooms[room].player[i].id,
+                    x: rooms[room].player[i].x,
+                    y: rooms[room].player[i].y,
+                    direction: rooms[room].player[i].direction
+                });
+            }else{
+                console.log("No hit!");
+            }
+        }
+    }else{
+        console.log(client.id + " wollte sich als Hunter ausgeben ist er aber nicht!");
+    }
+
 });
+
+});
+
+
 
 function roomFull(room){
 
@@ -214,9 +280,15 @@ function startGame(room,client){
     console.log("Room " + room + ": Starting soon!");
     io.to(room).emit("startingSoon", (5));
 
+    io.to(rooms[room].hunter.id).emit("assignRole", {
+        role: 'h',
+        bulletsLeft: rooms[room].hunter.bullets
+    });
+
     for(let i = 0; i < rooms[room].player.length; ++i){
+
         io.to(rooms[room].player[i].id).emit("assignRole", {
-            role: rooms[room].player[i].role,
+            role: 'c',
             chickenId: rooms[room].player[i].id
         });
     }
