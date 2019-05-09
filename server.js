@@ -3,6 +3,7 @@ const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const fs = require('fs');
+const bodyParser = require('body-parser');
 
 eval(fs.readFileSync('database.js')+'');
 
@@ -15,12 +16,62 @@ server.listen(3000, function() {
   console.log("server now listening on port 3000");
 });
 
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+}));
 app.use(express.static("static"));
 
 let rooms = {};
 
 app.get("/", function(req, res) {
     res.sendFile(__dirname + "/index.html");
+});
+
+/**
+ *  input:      password and user as JS
+ON
+ *  res-status: 403 - wrong password or username
+ *              200 - authentication successfull  
+ */
+app.post("/checkAuthentication", function(req,res) {
+    try{
+
+        login(req.body.user, req.body.password, function(credentialsCorrect) {
+            if(credentialsCorrect) {
+                res.status(200).send("authentication successfull");
+            } else {
+                res.status(500).send("wrong password or username");
+            }
+        });
+    } catch(e) {
+        console.log("/checkAuthentication: someone send invalid credentials");
+        res.send(500);
+    }
+});
+
+app.post("/registerUser", function(req,res) {
+    try{
+        registerUser(req.body.user, req.body.password, function(registerSuccessfull) {
+            switch(registerSuccessfull) {
+                case 0:
+                    res.status(200).send("Registration successfull");
+                    break;
+                case 1:
+                    res.status(409).send('{"message":"Username already exists", "rc": 1}');
+                    break;
+                case 2:
+                    res.status(409).send('{"message":"Email already exists", "rc": 2}');
+                    break;
+                default:
+                    res.status(500).send("Internal Problem during Registration")
+            }
+        });
+    } catch(e) {
+        console.log("/registerUser: someone send invalid credentials");
+        console.log(e);
+        res.sendStatus(500);
+    }
 });
 
 io.on('connection', (client) => {

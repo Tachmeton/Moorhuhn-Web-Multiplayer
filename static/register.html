@@ -1,56 +1,24 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="style.css">
-    <title>Anmeldung</title>
-  </head>
-  <body>
-    <div class="container">
-        <div class="row">
-            <div class="col"></div>
-            <div class="col-4">
-                <div class="card login-card">
-                    <div class="card-body">
-                        <div class="page-header">
-                            <h1 class="text-white">Chlorhuhn</h1>
-                        </div>
-                        <h6 class="card-subtitle mb-2 text-white top-buffer">Registrierung</h6>
-                        <form>
-                            <div class="form-group">
-                                <label for="exampleInputEmail1"><div class="text-white">Benutzername</div></label>
-                                <input type="email" class="form-control form-control-sm" id="exampleInputEmail1" aria-describedby="emailHelp">
-                            </div>
-                            <div class="form-group">
-                                <label for="exampleInputPassword1"><div class="text-white">Passwort</div></label>
-                                <input type="password" class="form-control form-control-sm" id="exampleInputPassword1">
-                            </div>
-                            <div class="form-group">
-                                    <label for="exampleInputPassword1"><div class="text-white">Passwort wiederholen</div></label>
-                                    <input type="password" class="form-control form-control-sm" id="exampleInputPassword1">
-                                </div>
-                            <div class="btn-group">
-                                <button href="Chlorhuhn.php" class="btn btn-outline-light">Registrieren</button>
-                                <button href="register.php" class="btn btn-outline-light ">Ich habe bereits einen Account</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+<div class="card-body" id="login-card-body">
+    <div class="page-header">
+        <h1 class="text-white">Chlorhuhn</h1>
+    </div>
+    <h6 class="card-subtitle mb-2 text-white top-buffer">Registrierung</h6>
+    <div id="register-form">
+        <div class="form-group">
+            <label for="exampleInputEmail1"><div class="text-white">Benutzername</div></label>
+            <input type="user" class="form-control form-control-sm" id="username" aria-describedby="emailHelp">
+        </div>
+        <div class="form-group">
+            <label for="exampleInputPassword1"><div class="text-white">Passwort</div></label>
+            <input type="password" class="form-control form-control-sm" id="password">
+        </div>
+        <div class="form-group">
+                <label for="exampleInputPassword1"><div class="text-white">Passwort wiederholen</div></label>
+                <input type="password" class="form-control form-control-sm" id="passwordConfirm">
             </div>
-            <div class="col"></div>
+        <div class="btn-group">
+            <button id="register" class="btn btn-outline-light">Registrieren</button>
+            <button id="return-to-login"  class="btn btn-outline-light ">Ich habe bereits einen Account</button>
         </div>
     </div>
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="navigate.js"></script>
-  </body>
-</html>
+</div>

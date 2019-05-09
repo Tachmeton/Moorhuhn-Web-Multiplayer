@@ -14,15 +14,18 @@ const pool = new pg.Pool(dbOptions);
     Return: 0 - erfolgreich
             1 - Name bereits vorhanden
             2 - Email bereits vorhanden
+            3 - Database Error
 */
-function insertPlayer(name, password, email) {
+function registerUser(name='', password, done){//email='', done) {
+    const email = ' '
+    name = (name===null)?'':name;
     bcrypt.genSalt(saltRounds, function(err, salt) {
         if(err) {
             console.log(err.stack);
         } else {
-            bcrypt.hash(password, salt, function(err, hash) {
+            bcrypt.hash(password, salt, function(err, hash) { // old: select name,email
                 const query1 = {
-                    text: "SELECT name, email FROM player;",
+                    text: "SELECT name FROM player;",
                     rowMode: "array"
                 };
                 const query2 = {
@@ -33,6 +36,7 @@ function insertPlayer(name, password, email) {
                 pool.query(query1, (err, res) => {
                     if(err) {
                         console.log(err.stack);
+                        done(3);
                     } else {
                         console.log("SELECT successful");
                         
@@ -40,17 +44,21 @@ function insertPlayer(name, password, email) {
                         for (i = 0; i < res.rowCount; i++) {
                             if(res.rows[i][0].toLowerCase().localeCompare(name.toLowerCase()) == 0) {
                                 console.log("gibts schon!!1");
-                                return 1;
+                                console.log("db:" + res.rows[i][0].toLowerCase() + ";gschikct:" + name.toLowerCase());
+                                done(1);
+                                return;
                             }
                         }
                         
                         //check emails
-                        for (i = 0; i < res.rowCount; i++) {
+                        /*for (i = 0; i < res.rowCount; i++) {
                             if(res.rows[i][1].toLowerCase().localeCompare(email.toLowerCase()) == 0) {
                                 console.log("gibts schon!!");
-                                return 2;
+                                console.log("db:" + res.rows[i][1].toLowerCase() + ";gschikct:" + email.toLowerCase());
+                                done(2);
+                                return;
                             }
-                        }
+                        }*/
 
                         //insert player
                         pool.query(query2, (err, res) => {
@@ -58,7 +66,8 @@ function insertPlayer(name, password, email) {
                                 console.log(err);
                             } else {
                                 console.log("inserted successful");
-                                return 0;
+                                console.log(done);
+                                done(0);
                             }
                         });
                     }
@@ -73,7 +82,7 @@ function insertPlayer(name, password, email) {
     Return: 0 - Eingabe war erfolgreich
             1 - Passwort oder Login waren falsch
 */
-function login(login, password) {
+function login(login, password, done) {
     const query = {
         text: "SELECT password, salt FROM player WHERE name = '" + login + "' OR email = '" + login + "';",
         rowMode: "array"
@@ -87,15 +96,15 @@ function login(login, password) {
                 bcrypt.hash(password, res.rows[0][1], function(err, hash) {
                     if(res.rows[0][0].localeCompare(hash) == 0) {
                         console.log("Eingabe war korrekt!");
-                        return 0;
+                        done(true);
                     } else {
                         console.log("Passwort war falsch!")
-                        return 1;
+                        done(false);
                     }
                 });
             } else {
                 console.log("Falscher Login!")
-                return 1;
+                done(false);
             }
         }
     });
