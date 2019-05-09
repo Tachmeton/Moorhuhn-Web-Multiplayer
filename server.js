@@ -2,6 +2,9 @@ const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+const fs = require('fs');
+
+eval(fs.readFileSync('database.js')+'');
 
 const xSpeed = 5;
 const ySpeed = 20;
@@ -224,3 +227,4 @@ function updateChicks(room, client){
 
   client.to(room).emit("syncChicks", (rooms[room].player));
 }
+
