@@ -1,0 +1,29 @@
+.navbar {
+    margin-bottom: 5rem;
+}
+
+.card {
+    margin-top: 7rem;
+}
+
+.btn {
+    width: 100%;
+    margin-top: 2.5rem;
+}
+
+body{
+    background-image: url(img/blur_background.png);
+    background-size: cover;
+}
+
+.login-card{
+    background-color:rgba(0,0,0,0);
+}
+
+.card-body{
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.top-buffer{
+    margin-top: 20px;
+}
