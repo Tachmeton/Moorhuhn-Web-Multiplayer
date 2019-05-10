@@ -15,18 +15,18 @@ const pool = new pg.Pool(dbOptions);
             1 - Name bereits vorhanden
             2 - Email bereits vorhanden
 */
-function insertPlayer(name, password, email) {
+function insertPlayer(name, password) {
     bcrypt.genSalt(saltRounds, function(err, salt) {
         if(err) {
             console.log(err.stack);
         } else {
             bcrypt.hash(password, salt, function(err, hash) {
                 const query1 = {
-                    text: "SELECT name, email FROM player;",
+                    text: "SELECT name FROM player;",
                     rowMode: "array"
                 };
                 const query2 = {
-                    text: "INSERT INTO player (name, email, password, salt) VALUES ('" + name + "', '" + email + "', '" + hash + "', '" + salt + "');",
+                    text: "INSERT INTO player (name, password, salt) VALUES ('" + name + "', '" + hash + "', '" + salt + "');",
                     rowMode: "array"
                 };
             
@@ -41,14 +41,6 @@ function insertPlayer(name, password, email) {
                             if(res.rows[i][0].toLowerCase().localeCompare(name.toLowerCase()) == 0) {
                                 console.log("gibts schon!!1");
                                 return 1;
-                            }
-                        }
-                        
-                        //check emails
-                        for (i = 0; i < res.rowCount; i++) {
-                            if(res.rows[i][1].toLowerCase().localeCompare(email.toLowerCase()) == 0) {
-                                console.log("gibts schon!!");
-                                return 2;
                             }
                         }
 
@@ -75,7 +67,7 @@ function insertPlayer(name, password, email) {
 */
 function login(login, password) {
     const query = {
-        text: "SELECT password, salt FROM player WHERE name = '" + login + "' OR email = '" + login + "';",
+        text: "SELECT password, salt FROM player WHERE name = '" + login + "';",
         rowMode: "array"
     };
 
@@ -168,5 +160,5 @@ function getPoints(player) {
         }
     });
 }
-
+//insertPlayer("Aul", "paul");
 //saveGame({"username":"franz", "hits":12, "shots":30}, [{"username":"paul", "lifesLeft":2}, {"username":"basti", "lifesLeft":4}], {"duration":200});
