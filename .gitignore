@@ -48,3 +48,6 @@ Thumbs.db
 
 #database stuff
 dbOptions.json
+
+#jwt
+config.js

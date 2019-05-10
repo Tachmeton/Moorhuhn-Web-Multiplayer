@@ -4,8 +4,14 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 const fs = require('fs');
 const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken');
+const config = require('./config');
+const cookieParser = require('cookie-parser');
 
 eval(fs.readFileSync('database.js')+'');
+
+Error.stackTraceLimit = Infinity;
+
 
 const xSpeed = 5;
 const ySpeed = 20;
@@ -20,14 +26,47 @@ app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
-app.use(express.static("static"));
+app.use(cookieParser());
 
 let rooms = {};
 
-app.get("/", function(req, res) {
-    res.sendFile(__dirname + "/index.html");
+
+app.get("/?", function(req, res) {
+    console.log("cookie: ");
+    console.log(req.cookies);
+    if(req.cookies.token) {
+        jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
+            if(err) {
+                console.log("bla");
+                res.sendFile(__dirname + "/static/index.html");
+            } else {
+                console.log("bla");
+                res.sendFile(__dirname + "/static/main.html");
+            }
+        });
+    } else {
+        console.log("kein token gefunden");
+        res.sendFile(__dirname + "/static/index.html");
+    }
 });
 
+
+app.get("/main.html", function(req,res) {
+    if(req.cookies.token) {
+        jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
+            if(err) {
+                res.sendFile(__dirname + "/static/index.html");
+            } else {
+                res.sendFile(__dirname + "/static/main.html");
+            }
+        });
+    } else {
+        console.log("kein token gefunden");
+    }
+    res.sendFile(__dirname + "/static/index.html");
+});
+
+app.use(express.static("static"));
 /**
  *  input:      password and user as JS
 ON
@@ -36,16 +75,20 @@ ON
  */
 app.post("/checkAuthentication", function(req,res) {
     try{
-        login(req.body.user, req.body.password, function(credentialsCorrect) {
-            if(credentialsCorrect) {
-                res.status(200).send("authentication successfull");
+        login(req.body.user, req.body.password, function(databaseResponse) {
+            if(databaseResponse.correctCredentials) {
+                console.log("user logged in, jwt will be sent");
+                // create jwt with player_id; expires in 14 days (60*60*24*14)
+                const token = jwt.sign({"player_id":databaseResponse.player_id}, config.secret,{expiresIn: 1209600});
+                res.cookie("token", token, {"httpOnly": true});// ,"secure": "true"});
+                res.status(200).send({"auth":true, "token":token});
             } else {
-                res.status(500).send("wrong password or username");
+                res.status(409).send({"auth": false});
             }
         });
     } catch(e) {
-        console.log("/checkAuthentication: someone send invalid credentials");
-        res.send(500);
+        console.log("/checkAuthentication: someone sent invalid credentials");
+        res.status(400).send({"auth": false});
     }
 });
 
@@ -63,7 +106,7 @@ app.post("/registerUser", function(req,res) {
                     res.status(409).send('{"message":"Email already exists", "rc": 2}');
                     break;
                 default:
-                    res.status(500).send("Internal Problem during Registration")
+                    res.status(500).send("Internal Problem during Registration");
             }
         });
     } catch(e) {
@@ -71,6 +114,54 @@ app.post("/registerUser", function(req,res) {
         console.log(e);
         res.sendStatus(500);
     }
+});
+
+function getLobbies() {
+    return [
+        {
+            creator: "john der 4.",
+            name: "heftige lobby",
+            maxPlayers: 4,
+            joinedPlayers: 2,
+            id: 7
+        },
+        {
+            creator: "john der 5.",
+            name: "heftige lobby2",
+            maxPlayers: 4,
+            joinedPlayers: 4,
+            id: 8
+        }
+        ,
+        {
+            creator: "john der 5.",
+            name: "heftige lobby2",
+            maxPlayers: 4,
+            joinedPlayers: 4,
+            id: 9
+        }
+    ]
+}
+
+app.get("/getLobbies", function(req,res) {
+    if(req.cookies.token) {
+        jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
+            if(err) {
+                res.status(400).send("no token sent");
+            } else {
+                res.status(200).send(getLobbies());
+            }
+        });
+    } else {
+        res.status(400).send("no token sent");
+    }
+});
+
+app.post("/joinLobby", function(req,res) {
+    console.log("player wants to join lobby");
+    const lobbyId = req.query.lobbyId;
+
+    res.status(200).send();
 });
 
 io.on('connection', (client) => {

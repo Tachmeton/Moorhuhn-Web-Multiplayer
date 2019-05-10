@@ -12,8 +12,11 @@
 }
 
 body{
+    height: 100vh;
     background-image: url(img/blur_background.png);
     background-size: cover;
+    background-repeat: no-repeat;
+
 }
 
 .login-card{
@@ -26,4 +29,8 @@ body{
 
 .top-buffer{
     margin-top: 20px;
+}
+
+.main-container{
+    margin-left:10%;
 }

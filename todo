@@ -11,3 +11,4 @@ stuff todo:
 ui: 
     -anything
     -load login via ajax
+    -token auf server zu secret:true machen

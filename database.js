@@ -84,7 +84,7 @@ function registerUser(name='', password, done){//email='', done) {
 */
 function login(login, password, done) {
     const query = {
-        text: "SELECT password, salt FROM player WHERE name = '" + login + "' OR email = '" + login + "';",
+        text: "SELECT password, salt, id FROM player WHERE name = '" + login + "' OR email = '" + login + "';",
         rowMode: "array"
     };
 
@@ -95,16 +95,13 @@ function login(login, password, done) {
             if(res.rowCount == 1) {
                 bcrypt.hash(password, res.rows[0][1], function(err, hash) {
                     if(res.rows[0][0].localeCompare(hash) == 0) {
-                        console.log("Eingabe war korrekt!");
-                        done(true);
+                        done({"correctCredentials":true, "player_id": res.rows[0][2]});
                     } else {
-                        console.log("Passwort war falsch!")
-                        done(false);
+                        done({"correctCredentials":false});
                     }
                 });
             } else {
-                console.log("Falscher Login!")
-                done(false);
+                done({"correctCredentials":false});
             }
         }
     });
