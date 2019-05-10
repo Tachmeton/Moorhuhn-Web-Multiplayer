@@ -160,5 +160,7 @@ function getPoints(player) {
         }
     });
 }
-//insertPlayer("Aul", "paul");
-//saveGame({"username":"franz", "hits":12, "shots":30}, [{"username":"paul", "lifesLeft":2}, {"username":"basti", "lifesLeft":4}], {"duration":200});
+insertPlayer("paul", "paul");
+insertPlayer("franz", "franz");
+insertPlayer("basti", "basti");
+saveGame({"username":"franz", "hits":12, "shots":30}, [{"username":"paul", "lifesLeft":2}, {"username":"basti", "lifesLeft":4}], {"duration":200});
