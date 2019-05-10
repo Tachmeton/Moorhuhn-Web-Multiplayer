@@ -102,6 +102,54 @@ function login(login, password) {
 }
 
 /*
+    Fügt Spiel in Tabelle game und alle zugehörigen Spieler in Tabelle player_in_game
+    Input: hunter, chicken[], general mit hunter.username, hunter.shots, hunter.hits, chicken[].username, chicken[].livesLeft, general.duration
+    Return: 0 - alles korrekt
+            1 - Fehler beim schreiben in die DB
+*/
+function saveGame(hunter, chicken, general) {
+    const query1 = {
+        text: "INSERT INTO game (shots, hits, duration) VALUES ('" + hunter.shots + "', '" + hunter.hits + "', " + general.duration + ") RETURNING id;",
+        rowMode: "array"
+    };
+
+    pool.query(query1, (err, res) => {
+        if(err) {
+            console.log(err.stack);
+            return 1;
+        } else {
+            console.log("Game wurde in die Datenbank geschrieben.");
+
+            //Setze zweites Kommando zusammen
+            var part1 = "INSERT INTO player_in_game (game, shooter, chicken1, chicken_lifes1";
+            for(var i = 1; i < chicken.length; i++) {
+                part1 = part1 + ", chicken" + (i+1) + ", chicken_lifes" + (i+1);
+            }
+            part1 = part1 + ") VALUES (" + res.rows[0][0] + ", " + "(SELECT id FROM player WHERE name='" + hunter.username + "')";
+            for(var i = 0; i < chicken.length; i++) {
+                part1 = part1 + ", (SELECT id FROM player WHERE name='" + chicken[i].username + "'), " + chicken[i].lifesLeft;
+            }
+            part1 = part1 + ");";
+
+            const query2 = {
+                text: part1,
+                rowMode: "array"
+            };
+
+            pool.query(query2, (err, res) => {
+                if(err) {
+                    console.log(err.stack);
+                    return 1;
+                } else {
+                    console.log("Successfully inserted everything");
+                    return 0;
+                }
+            });
+        }
+    });
+}
+
+/*
     gibt die Punkte des spielers als Array zurück
     [shooterpoints, chickenpoints]
 */
@@ -121,7 +169,4 @@ function getPoints(player) {
     });
 }
 
-//login("Frranz", "PaulistToll");
-//insertPlayer("Frranz", "PaulistToll", "franz@admin.de");
-//getPoints("Pauli");
-//pool.end;
+//saveGame({"username":"franz", "hits":12, "shots":30}, [{"username":"paul", "lifesLeft":2}, {"username":"basti", "lifesLeft":4}], {"duration":200});
