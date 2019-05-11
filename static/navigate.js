@@ -1,3 +1,13 @@
+/**
+ * JS for Login:
+ *  HTML from login/register loads dynamically while switching between the two
+ */
+
+ /**
+  * Clicking Login Button:
+  *     Credentials Correct: dynamically load main.html
+  *                    else: show error message
+  */
 $('#login-card').on('click', '#login', function(e) {
     $('#passwordHelp').remove();
     $.ajax({
@@ -29,10 +39,111 @@ $('#login-card').on('click', '#login', function(e) {
       });
 });
 
+/**
+ * Requesets main-container.html
+ * Returns HTML in parameter of Callback
+ * @param {Function} done 
+ */
+function loadMain(done) {
+    $.ajax({
+        type:"GET",
+        url:"http://localhost:3000/main-container.html",
+        success: function(data){
+            done(data)
+        },
+        error: function(data){
+            console.log("error while loading /register.html");
+        }
+    });
+}
+
+/**
+ * Clicking create Account Button
+ * dynamically loads register.html from server
+ */
+$('#login-card').on('click', '#create-account', function(e) {
+    e.preventDefault();
+    $.ajax({
+        type:"GET",
+        url:"http://localhost:3000/register.html",
+        success: function(data){
+            $('#login-card-body').replaceWith(data);
+        },
+        error: function(data){
+            console.log("error while loading /register.html");
+        }
+    });
+});
+
+/**
+ * Clicking Register Button in register view
+ * 
+ * Sends POST Request to Server to create Account
+ * Account could be created: redirects to main 
+ *                     else: show error
+ */
+$('#login-card').on('click', '#register', function(e) {
+    $('#registerHelp').remove();
+
+    if($('#password').val() !== $('#passwordConfirm').val()) {
+        $('#register-form').prepend('<small id="registerHelp" class="text-danger">Passworteingaben nicht identisch</small>');
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: "http://localhost:3000/registerUser",
+        data: {
+            "user": $('#username').val(),
+            "password": $('#password').val()
+        },
+        success: function() {
+            navigatePage('main');
+            $('#return-to-login').click();
+        },
+        error: function(error) {
+            console.log(error);
+            if(JSON.parse(error.responseText).rc == 1) {
+                $('#register-form').prepend('<small id="registerHelp" class="text-danger">E-Mailadresse existiert bereits</small>');
+            } else {
+                $('#register-form').prepend('<small id="registerHelp" class="text-danger">Benutzername existiert bereits</small>');
+            }
+        }
+      });
+});
+
+/**
+ * Clicking Already have an account
+ * Loads login.html and returns to login view
+ */
+$('#login-card').on('click', '#return-to-login', function(e) {
+    e.preventDefault();
+    $.ajax({
+        type:"GET",
+        url:"http://localhost:3000/login.html",
+        success: function(data){
+            $('#login-card-body').replaceWith(data);
+        },
+        error: function(data){
+            console.log("error");
+            console.log(data);
+        }
+    });
+});
+
+/**
+ * Click on Lobby Button in main
+ * 
+ * refreshes lobbies from server 
+ * (uses /getLobbies) 
+ */
 $('body').on('click', '#v-pills-home-tab', function() {
     showLobbies();
 });
 
+/**
+ * Requests Lobbies from Server
+ * Adds Lobbies to HTML
+ */
 function showLobbies() {
     loadLobbies(function(data,textStatus,jqXhr){
         if(jqXhr.status === 200) {
@@ -62,6 +173,13 @@ function showLobbies() {
     });
 }
 
+/**
+ * Sends POST Request to Server to joinLobby
+ * 
+ * Joining lobby possible: dynamically load /game.html
+ * 
+ * @param {Element} el 
+ */
 function joinLobby(el) {
     const lobbyId = $(el).attr('data-gameId');
     $.ajax({
@@ -92,7 +210,13 @@ function joinLobby(el) {
       });
 }
 
-
+/**
+ * Loads /game.html from server
+ * 
+ * Returns HTML as Parameter of callback
+ * 
+ * @param {Function} done 
+ */
 function loadGame(done) {
     $.ajax({
         type:"GET",
@@ -106,19 +230,13 @@ function loadGame(done) {
     });
 }
 
-function loadMain(done) {
-    $.ajax({
-        type:"GET",
-        url:"http://localhost:3000/main-container.html",
-        success: function(data){
-            done(data)
-        },
-        error: function(data){
-            console.log("error while loading /register.html");
-        }
-    });
-}
-
+/**
+ * GET Lobbies from server
+ * 
+ * Returns Array as Parameter of callback
+ * 
+ * @param {Function} done 
+ */
 function loadLobbies(done) {
     $.ajax({
         type:"GET",
@@ -134,66 +252,4 @@ function loadLobbies(done) {
             console.log("error while loading /getLobbies");
         }
     });
-}
-
-$('#login-card').on('click', '#create-account', function(e) {
-    e.preventDefault();
-    $.ajax({
-        type:"GET",
-        url:"http://localhost:3000/register.html",
-        success: function(data){
-            $('#login-card-body').replaceWith(data);
-        },
-        error: function(data){
-            console.log("error while loading /register.html");
-        }
-    });
-});
-
-$('#login-card').on('click', '#return-to-login', function(e) {
-    e.preventDefault();
-    $.ajax({
-        type:"GET",
-        url:"http://localhost:3000/login.html",
-        success: function(data){
-            $('#login-card-body').replaceWith(data);
-        },
-        error: function(data){
-            console.log("error");
-            console.log(data);
-        }
-    });
-});
-
-$('#login-card').on('click', '#register', function(e) {
-    $('#registerHelp').remove();
-
-    if($('#password').val() !== $('#passwordConfirm').val()) {
-        $('#register-form').prepend('<small id="registerHelp" class="text-danger">Passworteingaben nicht identisch</small>');
-        return;
-    }
-    $.ajax({
-        type: "POST",
-        url: "http://localhost:3000/registerUser",
-        data: {
-            "user": $('#username').val(),
-            "password": $('#password').val()
-        },
-        success: function() {
-            navigatePage('main');
-            $('#return-to-login').click();
-        },
-        error: function(error) {
-            console.log(error);
-            if(JSON.parse(error.responseText).rc == 1) {
-                $('#register-form').prepend('<small id="registerHelp" class="text-danger">E-Mailadresse existiert bereits</small>');
-            } else {
-                $('#register-form').prepend('<small id="registerHelp" class="text-danger">Benutzername existiert bereits</small>');
-            }
-        }
-      });
-});
-
-function navigatePage() {
-
 }
