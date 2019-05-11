@@ -405,5 +405,18 @@ function updateChicks(room, client){
 }
 
 function cookieToJson(cookie) {
+    const returnJson = {};
+    const splitSemicolon = cookie.split(";");
+
+    for(let i = 0; i< splitSemicolon.length; ++i) {
+        const splitEquals = splitSemicolon[i].split('=');
+        if(splitEquals.length = 2) {
+            returnJson[splitEquals[0]] = splitEquals[1];
+        } else {
+            return {};
+        }
+    }
+
+    return returnJson;
     
 }
