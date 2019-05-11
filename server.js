@@ -174,26 +174,26 @@ app.post("/joinLobby", function(req,res) {
 
 io.on('connection', (client) => {
     let playerId;
-
-    console.log("cookie: ");
-    console.log(client.handshake.headers.cookie);
-    console.log(cookieParser.JSONCookie(client.handshake.headers.cookie));
-    console.log(typeof client.handshake.headers.cookie);
     try{
-        const cookies = JSON.parse(client.handshake.headers.cookie)
-        //Gültigkeit überprüfen:
-        jwt.verify(token, config.secret, function(err, decoded) {
-            if(err) {
-                // fehler: ungültiger token/cookie
-                console.log("ein fehler beim entschlüsseln des jwt ist aufgetreten");
-            } else {
-                //konnte entschlüsselt werden
-                playerId = decoded.playerId;
-                console.log("player: " + playerId + "hat eine socket connection aufgebaut");
-            }
-        });
+        const cookies = cookieToJson(client.handshake.headers.cookie);
+        if(cookies.token !== null) {
+            //Gültigkeit überprüfen:
+            jwt.verify(cookies.token, config.secret, function(err, decoded) {
+                if(err) {
+                    // fehler: ungültiger token/cookie
+                    console.log("ein fehler beim entschlüsseln des jwt ist aufgetreten");
+                } else {
+                    //konnte entschlüsselt werden
+                    playerId = decoded.playerId;
+                    console.log("player: " + playerId + "hat eine socket connection aufgebaut");
+                }
+            });
+        } else {
+            throw Error("could not parse cookie");
+        }
     } catch(e) {
         console.log("socket.io on connection - can not JSON.parse cookie");
+        console.log(e);
         client.disconnect();
     }
     
