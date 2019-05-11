@@ -184,8 +184,8 @@ io.on('connection', (client) => {
                     console.log("ein fehler beim entschlüsseln des jwt ist aufgetreten");
                 } else {
                     //konnte entschlüsselt werden
-                    playerId = decoded.playerId;
-                    console.log("player: " + playerId + "hat eine socket connection aufgebaut");
+                    playerId = decoded.player_id;
+                    console.log("player: " + playerId + " hat eine socket connection aufgebaut");
                 }
             });
         } else {
