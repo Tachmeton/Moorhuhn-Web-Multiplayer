@@ -116,18 +116,23 @@ app.post("/registerUser", function(req,res) {
     }
 });
 
+/**
+ * returns array of json objects with attributes:
+ *    -creator
+ *    -maxPlayers
+ *    -joinedPlayers
+ *    -id
+ */
 function getLobbies() {
     return [
         {
             creator: "john der 4.",
-            name: "heftige lobby",
             maxPlayers: 4,
             joinedPlayers: 2,
             id: 7
         },
         {
             creator: "john der 5.",
-            name: "heftige lobby2",
             maxPlayers: 4,
             joinedPlayers: 4,
             id: 8
@@ -135,7 +140,6 @@ function getLobbies() {
         ,
         {
             creator: "john der 5.",
-            name: "heftige lobby2",
             maxPlayers: 4,
             joinedPlayers: 4,
             id: 9

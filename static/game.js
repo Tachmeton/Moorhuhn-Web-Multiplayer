@@ -279,9 +279,7 @@ class Gameboard {
         }, 1000);
     }
 
-    /******************** */
     joinRoom(){
-        //joined Room 1 (wer hätte es gedacht? Ich nicht - Michi)
         socket.emit("joinRoom", "1");
     }
 
@@ -294,7 +292,7 @@ class Gameboard {
             clearInterval(this.timeLeftInterval);
             return;
         };
-        this.updateDirections(); // uncomment when server is working
+//        this.updateDirections(); // uncomment when server is working
         this.updateChicks();
         this.drawChicks();
         this.drawAnimatedShot();

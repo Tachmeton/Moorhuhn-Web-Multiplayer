@@ -15,6 +15,7 @@ $('#login-card').on('click', '#login', function(e) {
                 console.log("redirecting to main");
                 loadMain(function(data) {
                     $('#mainContainer').replaceWith(data);
+                    showLobbies();
                 });
     
             } else {
@@ -29,9 +30,13 @@ $('#login-card').on('click', '#login', function(e) {
 });
 
 $('body').on('click', '#v-pills-home-tab', function() {
-    loadLobbies(function(data, textStatus,jqXhr) {
+    showLobbies();
+});
+
+function showLobbies() {
+    loadLobbies(function(data,textStatus,jqXhr){
         if(jqXhr.status === 200) {
-            $('#lobby-holder').empty();
+            $('#lobby-holder').not(':first').empty();
             for(let i = 0; i < data.length; ++i) {
                 const lobbyFree = (data[i].joinedPlayers < data[i].maxPlayers)?true:false;
                 $("#lobby-holder").append(' \
@@ -39,7 +44,7 @@ $('body').on('click', '#v-pills-home-tab', function() {
                         <div class="card-body ' + ((lobbyFree)?"bg-success":"bg-danger") + '">\
                             <div class="row">\
                                 <div class="col-sm">\
-                                ' + data[i].name + '\
+                                ' + data[i].creator + '\
                                 </div>\
                                 <div class="col-sm">\
                                 ' + data[i].joinedPlayers + '/' + data[i].maxPlayers + '\
@@ -55,7 +60,7 @@ $('body').on('click', '#v-pills-home-tab', function() {
             alert("lobbies konnten nicht geladen werden");
         }
     });
-});
+}
 
 function joinLobby(el) {
     const lobbyId = $(el).attr('data-gameId');
