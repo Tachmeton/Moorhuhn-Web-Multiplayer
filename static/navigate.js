@@ -1,3 +1,4 @@
+let activeGame;
 /**
  * JS for Login:
  *  HTML from login/register loads dynamically while switching between the two
@@ -97,7 +98,6 @@ $('#login-card').on('click', '#register', function(e) {
             "password": $('#password').val()
         },
         success: function() {
-            navigatePage('main');
             $('#return-to-login').click();
         },
         error: function(error) {
@@ -129,6 +129,11 @@ $('#login-card').on('click', '#return-to-login', function(e) {
         }
     });
 });
+
+/**
+ * JS for Main Page:
+ *  HTML from Lobbies, Profile, Settings is shown loaded when clicking sidebar
+ */
 
 /**
  * Click on Lobby Button in main
@@ -174,6 +179,30 @@ function showLobbies() {
 }
 
 /**
+ * GET Lobbies from server
+ * 
+ * Returns Array as Parameter of callback
+ * 
+ * @param {Function} done 
+ */
+function loadLobbies(done) {
+    $.ajax({
+        type:"GET",
+        url:"http://localhost:3000/getLobbies",
+        xhrFields: {
+            withCredentials: true
+        },
+        dataType: "json",
+        success: function(data, textStatus,jqXhr){
+            done(data, textStatus,jqXhr)
+        },
+        error: function(data){
+            console.log("error while loading /getLobbies");
+        }
+    });
+}
+
+/**
  * Sends POST Request to Server to joinLobby
  * 
  * Joining lobby possible: dynamically load /game.html
@@ -195,6 +224,7 @@ function joinLobby(el) {
                 loadGame(function(data,textStatus,jqXhr) {
                     if(jqXhr.status === 200) {
                         $('#mainContainer').replaceWith(data);
+                        activeGame = new Gameboard(lobbyId);
                     } else {
                         alert("/game.html konnte nicht geladen werden");
                     }
@@ -222,34 +252,10 @@ function loadGame(done) {
         type:"GET",
         url:"http://localhost:3000/game.html",
         success: function(data,textStatus,jqXhr){
-            done(data,textStatus,jqXhr)
+            done(data,textStatus,jqXhr);
         },
         error: function(data){
             console.log("error while loading /register.html");
-        }
-    });
-}
-
-/**
- * GET Lobbies from server
- * 
- * Returns Array as Parameter of callback
- * 
- * @param {Function} done 
- */
-function loadLobbies(done) {
-    $.ajax({
-        type:"GET",
-        url:"http://localhost:3000/getLobbies",
-        xhrFields: {
-            withCredentials: true
-        },
-        dataType: "json",
-        success: function(data, textStatus,jqXhr){
-            done(data, textStatus,jqXhr)
-        },
-        error: function(data){
-            console.log("error while loading /getLobbies");
         }
     });
 }

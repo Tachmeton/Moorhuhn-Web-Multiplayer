@@ -32,8 +32,6 @@ let rooms = {};
 
 
 app.get("/?", function(req, res) {
-    console.log("cookie: ");
-    console.log(req.cookies);
     if(req.cookies.token) {
         jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
             if(err) {
@@ -164,11 +162,44 @@ app.get("/getLobbies", function(req,res) {
 app.post("/joinLobby", function(req,res) {
     console.log("player wants to join lobby");
     const lobbyId = req.query.lobbyId;
+    if(lobbyId !== null) {
+        // irgendwie lobby beitrete action @bastian
+        res.status(200).send();
+    } else {
+        // fehler lobby kontte nicht beigetreten werden
+        res.status(403).send();
+    }
 
-    res.status(200).send();
 });
 
 io.on('connection', (client) => {
+    let playerId;
+
+    console.log("cookie: ");
+    console.log(client.handshake.headers.cookie);
+    console.log(cookieParser.JSONCookie(client.handshake.headers.cookie));
+    console.log(typeof client.handshake.headers.cookie);
+    try{
+        const cookies = JSON.parse(client.handshake.headers.cookie)
+        //Gültigkeit überprüfen:
+        jwt.verify(token, config.secret, function(err, decoded) {
+            if(err) {
+                // fehler: ungültiger token/cookie
+                console.log("ein fehler beim entschlüsseln des jwt ist aufgetreten");
+            } else {
+                //konnte entschlüsselt werden
+                playerId = decoded.playerId;
+                console.log("player: " + playerId + "hat eine socket connection aufgebaut");
+            }
+        });
+    } catch(e) {
+        console.log("socket.io on connection - can not JSON.parse cookie");
+        client.disconnect();
+    }
+    
+
+
+
   console.log("New Connection: " + client.id);
   //socket.emit("connect");
 
@@ -373,3 +404,6 @@ function updateChicks(room, client){
   client.to(room).emit("syncChicks", (rooms[room].player));
 }
 
+function cookieToJson(cookie) {
+    
+}

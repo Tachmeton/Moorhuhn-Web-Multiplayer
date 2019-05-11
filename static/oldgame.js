@@ -48,76 +48,164 @@ picRightMe.src = "img/copyrightChickReverseGreen.png";
 bullet.src = "img/bullet.png";
 crosshair.src = "img/crosshair.png";
 
-class Gameboard {
-    constructor(lobbyId) {
-        this.lobbyId = lobbyId;
+$(document).ready(function() {
+    console.log("game.js loaded");
 
-        this.canvas = document.getElementById("game");
-        this.ctx = this.canvas.getContext("2d");
-    
-        window.onresize = function() {
-            this.resized();
+    const c = document.getElementById("game");
+    const game = new Gameboard(c);
+
+    window.onresize = function() {
+        game.resized();
+    }
+
+    // initialize necessary global variables
+    let chicks = [
+        {
+            x: 140,
+            y: 20,
+            direction: 's',
+            lives:1
+        },
+        {
+            x: 280,
+            y:200,
+            direction: 'e',
+            lives:3
+        },
+        {
+            x:400,
+            y:100,
+            direction: 'w',
+            lives: 5
         }
-        this.resized();
+    ];
 
+
+    // register mouse click
+    document.getElementById("game").onclick = sendHunterShot;
+
+    // register keypresses
+    document.onkeydown = function(e){
+        sendChickControl(e, game);
+    };
+
+
+    const socket = io.connect('http://localhost:3000');
+
+    socket.on('connect', function() {
+        console.log("socket connection established");
+    });
+
+    socket.on('connect_error', function(message) {
+        console.log("error @ establishing socket connection: " + message);
+    });
+
+    socket.on('startingSoon', function(countDownTime) {
+        game.startCountdown(countDownTime);
+    });
+
+    socket.on('startingNow', function(data) {
+//        chicks = data.chicks;
+
+        game.startGame(data);
+    });
+
+    //Von Bastian reingefügt kommt später warsch weg
+    socket.on('joined', function(){
+        let joinButton = document.getElementById('joinRoom');
+        joinButton.innerHTML = "join Worked";
+    });
+
+    socket.on('syncChicks', function(syncedChicks) {
+        game.syncChicks(syncedChicks);
+//        chicks = syncedChicks;
+    });
+
+    socket.on('updateChick', function(chick) {
+        game.updateChick(chick);
+//        chicks[chicken.id] = chicken;
+    });
+
+    socket.on('killChick', function(id) {
+        game.killChick(id);
+//        chicks[chicken.id].alive = false;
+    });
+
+    socket.on('crosshairPosition', function(data) {
+        game.animatedShot.progress = REFRESH_RATE;
+        game.animatedShot.x = data.x;
+        game.animatedShot.y = data.y;
+    });
+
+    socket.on('disconnect', function() {
+        console.log("socket connection was closed");
+    });
+
+    // functions
+    function sendChickControl(e, game) {
+        e.preventDefault();
+        let direction;
+        e = e || window.event;
+        if (e.keyCode == '38') { // up key
+            direction = 'n';
+        }
+        else if (e.keyCode == '40') { // down key
+            direction = 's';
+        }
+        else if (e.keyCode == '37') { // left key
+            direction = 'w';
+        }
+        else if (e.keyCode == '39') { // right key
+            direction = 'e';
+        }else {
+            return; //other keys ignored
+        }
+
+        // only emit to server if direction changed
+        if(chicks[game.myChickenId].direction != direction) {
+            socket.emit('chickInput', direction);
+        }
+
+        if(TEST_MODE) {
+            chicks[game.myChickenId].direction = direction;
+        }
+    }
+
+    function sendHunterShot(e) {
+        if(game.myRole === 'c'){
+            return;
+        }
+        e = e || window.event;
+
+        const rect = c.getBoundingClientRect();
+        const canvasPosX = event.clientX - rect.left;
+        const canvasPosY = event.clientY - rect.top;
+        const virtualX = canvasPosX * (VIRTUAL_WIDTH/game.canvas.width);
+        const virtualY = canvasPosY * (VIRTUAL_HEIGHT/game.canvas.height);
+
+
+        console.log("canvasX: %s;canvasY:%s", canvasPosX, canvasPosY);
+        console.log("actual game: x-" + virtualX + ";y-" + virtualY);
+
+        socket.emit('hunterShot', {
+            x: virtualX,
+            y: virtualY
+        });
+    }
+
+});
+
+class Gameboard {
+    constructor(canvasElement) {
+        this.canvas = canvasElement;
+        this.ctx = this.canvas.getContext("2d");
+        this.resized();
         this.chicks = [];
         this.animatedShot = {
             progress: 0,
             x: 0,
             y: 0
         }
-
-        // register mouse click
-        document.getElementById("game").onclick = this.sendHunterShot;
-
-        // register keypresses
-        document.onkeydown = function(e){
-            this.sendChickControl(e);
-        };
-
-
-        // create socket connection and event actions
-        const socket = io.connect('http://localhost:3000');
-
-        socket.on('connect', function() {
-            console.log("socket connection established");
-        });
-
-        socket.on('connect_error', function(message) {
-            console.log("error @ establishing socket connection: " + message);
-        });
-
-        socket.on('startingSoon', function(countDownTime) {
-            this.startCountdown(countDownTime);
-        });
-
-        socket.on('startingNow', function(data) {
-            this.startGame(data);
-        });
-
-        socket.on('syncChicks', function(syncedChicks) {
-            this.syncChicks(syncedChicks);
-        });
-
-        socket.on('updateChick', function(chick) {
-            this.updateChick(chick);
-        });
-
-        socket.on('killChick', function(id) {
-            this.killChick(id);
-        });
-
-        socket.on('crosshairPosition', function(data) {
-            this.animatedShot.progress = REFRESH_RATE;
-            this.animatedShot.x = data.x;
-            this.animatedShot.y = data.y;
-        });
-
-        socket.on('disconnect', function() {
-            console.log("socket connection was closed");
-        });
-
-
     }
 
     resized() {
@@ -196,60 +284,6 @@ class Gameboard {
             this.drawLives();
         }
 //        this.drawLives();
-    }
-
-    sendChickControl(e) {
-        if(this.myRole === 'h'){
-            return;
-        }
-        e.preventDefault();
-        let direction;
-        e = e || window.event;
-        if (e.keyCode == '38') { // up key
-            direction = 'n';
-        }
-        else if (e.keyCode == '40') { // down key
-            direction = 's';
-        }
-        else if (e.keyCode == '37') { // left key
-            direction = 'w';
-        }
-        else if (e.keyCode == '39') { // right key
-            direction = 'e';
-        }else {
-            return; //other keys ignored
-        }
-
-        // only emit to server if direction changed // change how to find mychicken!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if(this.chicks[this.myChickenId].direction != direction) {
-            socket.emit('chickInput', direction);
-        }
-
-        if(TEST_MODE) {
-            chicks[this.myChickenId].direction = direction;
-        }
-    }
-
-    sendHunterShot(e) {
-        if(this.myRole === 'c'){
-            return;
-        }
-        e = e || window.event;
-
-        const rect = c.getBoundingClientRect();
-        const canvasPosX = event.clientX - rect.left;
-        const canvasPosY = event.clientY - rect.top;
-        const virtualX = canvasPosX * (VIRTUAL_WIDTH/this.canvas.width);
-        const virtualY = canvasPosY * (VIRTUAL_HEIGHT/this.canvas.height);
-
-
-        console.log("canvasX: %s;canvasY:%s", canvasPosX, canvasPosY);
-        console.log("actual game: x-" + virtualX + ";y-" + virtualY);
-
-        socket.emit('hunterShot', {
-            x: virtualX,
-            y: virtualY
-        });
     }
 
     updateDirections() {
