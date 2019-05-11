@@ -171,10 +171,6 @@ class Gameboard {
         }, 1000);
     }
 
-    joinRoom(){
-        socket.emit("joinRoom", "1");
-    }
-
     gameLoop() {
         this.clearCanvas();
         if(this.timeLeft === 0) {
