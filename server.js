@@ -2,6 +2,16 @@ const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+const fs = require('fs');
+const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken');
+const config = require('./config');
+const cookieParser = require('cookie-parser');
+
+eval(fs.readFileSync('database.js')+'');
+
+Error.stackTraceLimit = Infinity;
+
 
 const xSpeed = 50;
 const ySpeed = 50;
@@ -19,16 +29,189 @@ server.listen(3000, function() {
 console.log("server now listening on port 3000");
 });
 
-app.use(express.static("static"));
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+}));
+app.use(cookieParser());
 
 let rooms = {};
 
-app.get("/", function(req, res) {
-    res.sendFile(__dirname + "/index.html");
+
+app.get("/?", function(req, res) {
+    if(req.cookies.token) {
+        jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
+            if(err) {
+                console.log("bla");
+                res.sendFile(__dirname + "/static/index.html");
+            } else {
+                console.log("bla");
+                res.sendFile(__dirname + "/static/main.html");
+            }
+        });
+    } else {
+        console.log("kein token gefunden");
+        res.sendFile(__dirname + "/static/index.html");
+    }
+});
+
+
+app.get("/main.html", function(req,res) {
+    if(req.cookies.token) {
+        jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
+            if(err) {
+                res.sendFile(__dirname + "/static/index.html");
+            } else {
+                res.sendFile(__dirname + "/static/main.html");
+            }
+        });
+    } else {
+        console.log("kein token gefunden");
+    }
+    res.sendFile(__dirname + "/static/index.html");
+});
+
+app.use(express.static("static"));
+/**
+ *  input:      password and user as JS
+ON
+ *  res-status: 403 - wrong password or username
+ *              200 - authentication successfull  
+ */
+app.post("/checkAuthentication", function(req,res) {
+    try{
+        login(req.body.user, req.body.password, function(databaseResponse) {
+            if(databaseResponse.correctCredentials) {
+                console.log("user logged in, jwt will be sent");
+                // create jwt with player_id; expires in 14 days (60*60*24*14)
+                const token = jwt.sign({"player_id":databaseResponse.player_id}, config.secret,{expiresIn: 1209600});
+                res.cookie("token", token, {"httpOnly": true});// ,"secure": "true"});
+                res.status(200).send({"auth":true, "token":token});
+            } else {
+                res.status(409).send({"auth": false});
+            }
+        });
+    } catch(e) {
+        console.log("/checkAuthentication: someone sent invalid credentials");
+        res.status(400).send({"auth": false});
+    }
+});
+
+app.post("/registerUser", function(req,res) {
+    try{
+        registerUser(req.body.user, req.body.password, function(registerSuccessfull) {
+            switch(registerSuccessfull) {
+                case 0:
+                    res.status(200).send("Registration successfull");
+                    break;
+                case 1:
+                    res.status(409).send('{"message":"Username already exists", "rc": 1}');
+                    break;
+                case 2:
+                    res.status(409).send('{"message":"Email already exists", "rc": 2}');
+                    break;
+                default:
+                    res.status(500).send("Internal Problem during Registration");
+            }
+        });
+    } catch(e) {
+        console.log("/registerUser: someone send invalid credentials");
+        console.log(e);
+        res.sendStatus(500);
+    }
+});
+
+/**
+ * returns array of json objects with attributes:
+ *    -creator
+ *    -maxPlayers
+ *    -joinedPlayers
+ *    -id
+ */
+function getLobbies() {
+    return [
+        {
+            creator: "john der 4.",
+            maxPlayers: 4,
+            joinedPlayers: 2,
+            id: 7
+        },
+        {
+            creator: "john der 5.",
+            maxPlayers: 4,
+            joinedPlayers: 4,
+            id: 8
+        }
+        ,
+        {
+            creator: "john der 5.",
+            maxPlayers: 4,
+            joinedPlayers: 4,
+            id: 9
+        }
+    ]
+}
+
+app.get("/getLobbies", function(req,res) {
+    if(req.cookies.token) {
+        jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
+            if(err) {
+                res.status(400).send("no token sent");
+            } else {
+                res.status(200).send(getLobbies());
+            }
+        });
+    } else {
+        res.status(400).send("no token sent");
+    }
+});
+
+app.post("/joinLobby", function(req,res) {
+    console.log("player wants to join lobby");
+    const lobbyId = req.query.lobbyId;
+    if(lobbyId !== null) {
+        // irgendwie lobby beitrete action @bastian
+        res.status(200).send();
+    } else {
+        // fehler lobby kontte nicht beigetreten werden
+        res.status(403).send();
+    }
+
 });
 
 io.on('connection', (client) => {
+
     console.log("New Connection: " + client.id);
+    
+    let playerId;
+    try{
+        const cookies = cookieToJson(client.handshake.headers.cookie);
+        if(cookies.token !== null) {
+            //Gültigkeit überprüfen:
+            jwt.verify(cookies.token, config.secret, function(err, decoded) {
+                if(err) {
+                    // fehler: ungültiger token/cookie
+                    console.log("ein fehler beim entschlüsseln des jwt ist aufgetreten");
+                } else {
+                    //konnte entschlüsselt werden
+                    playerId = decoded.player_id;
+                    console.log("player: " + playerId + " hat eine socket connection aufgebaut");
+                }
+            });
+        } else {
+            throw Error("could not parse cookie");
+        }
+    } catch(e) {
+        console.log("socket.io on connection - can not JSON.parse cookie");
+        console.log(e);
+        client.disconnect();
+    }
+    
+
+
+
+    console.log("New Connection: " + client.id);
+    //socket.emit("connect");
 
     client.on('event', data => { /* … */ });
     client.on('disconnect', () => { /* … */ });
@@ -362,4 +545,21 @@ function updateChicks(room){
         }
         //console.log(rooms[room].player[i].x + ", " + rooms[room].player[i].y);
     }
+}
+
+function cookieToJson(cookie) {
+    const returnJson = {};
+    const splitSemicolon = cookie.split(";");
+
+    for(let i = 0; i< splitSemicolon.length; ++i) {
+        const splitEquals = splitSemicolon[i].split('=');
+        if(splitEquals.length = 2) {
+            returnJson[splitEquals[0]] = splitEquals[1];
+        } else {
+            return {};
+        }
+    }
+
+    return returnJson;
+    
 }

@@ -1,4 +1,4 @@
-const TEST_MODE = false;
+const TEST_MODE = true;
 const PLAYER_ROLE = "h";
 const MY_CHICKEN_ID = 1;
 const TOTAL_LIVES = 5;
@@ -12,10 +12,10 @@ const HEART_SYMBOL = "♥";
 const COUNTDOWN_TIME = 5;
 const REFRESH_RATE = 30;
 const xSpeed = 50;
-const ySpeed = 50;
+const ySpeed = 200;
 
 const VIRTUAL_WIDTH  = 15000;
-const VIRTUAL_HEIGHT = 10000;
+const VIRTUAL_HEIGHT = 10000; 
 const VIRTUAL_FONT_SIZE = 0.043;
 const VIRTUAL_CHICKEN_WIDTH = 0.072;
 const VIRTUAL_CHICKEN_HEIGHT = 0.14;
@@ -25,8 +25,6 @@ const VIRTUAL_BULLET_HEIGHT = 0.071;
 
 const chickenRelativWidth = 0.072;
 const chickenRelativHeight = 0.066;
-
-const MY_ROOM = 1;
 
 const picLeft = new Image();
 const picLeftMe = new Image();
@@ -50,50 +48,16 @@ picRightMe.src = "img/copyrightChickReverseGreen.png";
 bullet.src = "img/bullet.png";
 crosshair.src = "img/crosshair.png";
 
-class Gameboard {
-    constructor(lobbyId) {
-        this.lobbyId = lobbyId;
+$(document).ready(function() {
+    console.log("game.js loaded");
 
-<<<<<<< HEAD
-        this.canvas = document.getElementById("game");
-        this.ctx = this.canvas.getContext("2d");
-    
-        window.onresize = function() {
-            this.resized();
-        }
-        this.resized();
+    const c = document.getElementById("game");
+    const game = new Gameboard(c);
 
-        this.chicks = [];
-        this.animatedShot = {
-            progress: 0,
-            x: 0,
-            y: 0
-        }
-
-        // register mouse click
-        document.getElementById("game").onclick = this.sendHunterShot;
-
-        // register keypresses
-        document.onkeydown = function(e){
-            this.sendChickControl(e);
-        };
-
-
-        // create socket connection and event actions
-        const socket = io.connect('http://localhost:3000');
-
-        socket.on('connect', function() {
-            console.log("socket connection established");
-        });
-
-        socket.on('connect_error', function(message) {
-            console.log("error @ establishing socket connection: " + message);
-        });
-=======
     window.onresize = function() {
         game.resized();
     }
-/*
+
     // initialize necessary global variables
     let chicks = [
         {
@@ -114,39 +78,19 @@ class Gameboard {
             direction: 'w',
             lives: 5
         }
-    ];*/
+    ];
 
 
     // register mouse click
     document.getElementById("game").onclick = sendHunterShot;
-    document.getElementById("countdown").onclick = function(){console.log("countdown clicked");game.startCountdown(COUNTDOWN_TIME)};
-    document.getElementById("start").onclick = function(){
-        game.startGame({
-            chicks: chicks,
-            timeLeft: GAME_TIME,
-            role: PLAYER_ROLE,
-            myChickenId: MY_CHICKEN_ID,
-            bulletsLeft: MAX_BULLETS
-        });
-    };
-    document.getElementById("crosshairPosition").onclick = function() {
-        game.animatedShot.progress = REFRESH_RATE;
-        game.animatedShot.x = CROSSHAIRFADE_X_TEST;
-        game.animatedShot.y = CROSSHAIRFADE_Y_TEST;
-    };
-    document.getElementById("brutallyMurdered").onclick = function() {
-        chicks[1].alive = false;
-    };
-    document.getElementById("joinRoom").onclick = function(){
-        socket.emit("joinRoom", MY_ROOM);
-    };
 
     // register keypresses
     document.onkeydown = function(e){
         sendChickControl(e, game);
     };
 
-    const socket = io.connect('https://chlorhuhn.rocks', {"secure":true});
+
+    const socket = io.connect('http://localhost:3000');
 
     socket.on('connect', function() {
         console.log("socket connection established");
@@ -158,10 +102,6 @@ class Gameboard {
 
     socket.on('startingSoon', function(countDownTime) {
         game.startCountdown(countDownTime);
-    });
-
-    socket.on('assignRole', function(data) {
-        game.assignRole(data);
     });
 
     socket.on('startingNow', function(data) {
@@ -197,11 +137,6 @@ class Gameboard {
         game.animatedShot.y = data.y;
     });
 
-    socket.on('Plsleave', function(room){
-        console.log("I want to leave the room!");
-        socket.emit('leaveRoom', room);
-    });
-
     socket.on('disconnect', function() {
         console.log("socket connection was closed");
     });
@@ -209,13 +144,6 @@ class Gameboard {
     // functions
     function sendChickControl(e, game) {
         e.preventDefault();
-
-        if(game.role !== 'c') {
-            return;
-        }
-
-        console.log("button pressed: " + e.keyCode);
-
         let direction;
         e = e || window.event;
         if (e.keyCode == '38') { // up key
@@ -233,52 +161,40 @@ class Gameboard {
             return; //other keys ignored
         }
 
-        let myChickIndex;
-        for(let i = 0; i< game.chicks.length; i++) {
-            if(game.chicks[i].id === game.myChickenId) {
-                myChickIndex = i;
-            }
-        }
-
         // only emit to server if direction changed
-        if(game.chicks[myChickIndex].direction != direction) {
+        if(chicks[game.myChickenId].direction != direction) {
             socket.emit('chickInput', direction);
         }
->>>>>>> Bastian
 
-        socket.on('startingSoon', function(countDownTime) {
-            this.startCountdown(countDownTime);
+        if(TEST_MODE) {
+            chicks[game.myChickenId].direction = direction;
+        }
+    }
+
+    function sendHunterShot(e) {
+        if(game.myRole === 'c'){
+            return;
+        }
+        e = e || window.event;
+
+        const rect = c.getBoundingClientRect();
+        const canvasPosX = event.clientX - rect.left;
+        const canvasPosY = event.clientY - rect.top;
+        const virtualX = canvasPosX * (VIRTUAL_WIDTH/game.canvas.width);
+        const virtualY = canvasPosY * (VIRTUAL_HEIGHT/game.canvas.height);
+
+
+        console.log("canvasX: %s;canvasY:%s", canvasPosX, canvasPosY);
+        console.log("actual game: x-" + virtualX + ";y-" + virtualY);
+
+        socket.emit('hunterShot', {
+            x: virtualX,
+            y: virtualY
         });
+    }
 
-        socket.on('startingNow', function(data) {
-            this.startGame(data);
-        });
+});
 
-        socket.on('syncChicks', function(syncedChicks) {
-            this.syncChicks(syncedChicks);
-        });
-
-        socket.on('updateChick', function(chick) {
-            this.updateChick(chick);
-        });
-
-        socket.on('killChick', function(id) {
-            this.killChick(id);
-        });
-
-        socket.on('crosshairPosition', function(data) {
-            this.animatedShot.progress = REFRESH_RATE;
-            this.animatedShot.x = data.x;
-            this.animatedShot.y = data.y;
-        });
-
-        socket.on('disconnect', function() {
-            console.log("socket connection was closed");
-        });
-
-
-<<<<<<< HEAD
-=======
 class Gameboard {
     constructor(canvasElement) {
         this.canvas = canvasElement;
@@ -289,8 +205,7 @@ class Gameboard {
             progress: 0,
             x: 0,
             y: 0
-        };
->>>>>>> Bastian
+        }
     }
 
     resized() {
@@ -323,19 +238,18 @@ class Gameboard {
         }
     }
 
-    assignRole(roleData) {
-        this.role = roleData.role;
-        if(this.role === 'c') {
-            this.myChickenId = roleData.chickenId;
-        } else {
-            this.bulletsLeft = roleData.bulletsLeft;
-        }
-    }
-
     startGame(game) {
         const thisSave = this;
         this.chicks = game.chicks;
         this.timeLeft = game.timeLeft;
+        this.myRole = game.role;
+
+        if(this.myRole === "h") {
+            $(this.canvas).css("cursor", "url('img/crosshair.png') 25 25 , auto");
+            this.bulletsLeft = game.bulletsLeft;
+        } else {
+            this.myChickenId = game.myChickenId;
+        }
 
         this.gameInterval = setInterval(function(){
             thisSave.gameLoop();
@@ -343,6 +257,10 @@ class Gameboard {
         this.timeLeftInterval = setInterval(function(){
             --thisSave.timeLeft;
         }, 1000);
+    }
+
+    joinRoom(){
+        socket.emit("joinRoom", "1");
     }
 
     gameLoop() {
@@ -354,14 +272,7 @@ class Gameboard {
             clearInterval(this.timeLeftInterval);
             return;
         };
-<<<<<<< HEAD
 //        this.updateDirections(); // uncomment when server is working
-=======
-
-        if(TEST_MODE) {
-            this.updateDirections(); // uncomment when server is working
-        }
->>>>>>> Bastian
         this.updateChicks();
         this.drawChicks();
         this.drawAnimatedShot();
@@ -373,60 +284,6 @@ class Gameboard {
             this.drawLives();
         }
 //        this.drawLives();
-    }
-
-    sendChickControl(e) {
-        if(this.myRole === 'h'){
-            return;
-        }
-        e.preventDefault();
-        let direction;
-        e = e || window.event;
-        if (e.keyCode == '38') { // up key
-            direction = 'n';
-        }
-        else if (e.keyCode == '40') { // down key
-            direction = 's';
-        }
-        else if (e.keyCode == '37') { // left key
-            direction = 'w';
-        }
-        else if (e.keyCode == '39') { // right key
-            direction = 'e';
-        }else {
-            return; //other keys ignored
-        }
-
-        // only emit to server if direction changed // change how to find mychicken!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if(this.chicks[this.myChickenId].direction != direction) {
-            socket.emit('chickInput', direction);
-        }
-
-        if(TEST_MODE) {
-            chicks[this.myChickenId].direction = direction;
-        }
-    }
-
-    sendHunterShot(e) {
-        if(this.myRole === 'c'){
-            return;
-        }
-        e = e || window.event;
-
-        const rect = c.getBoundingClientRect();
-        const canvasPosX = event.clientX - rect.left;
-        const canvasPosY = event.clientY - rect.top;
-        const virtualX = canvasPosX * (VIRTUAL_WIDTH/this.canvas.width);
-        const virtualY = canvasPosY * (VIRTUAL_HEIGHT/this.canvas.height);
-
-
-        console.log("canvasX: %s;canvasY:%s", canvasPosX, canvasPosY);
-        console.log("actual game: x-" + virtualX + ";y-" + virtualY);
-
-        socket.emit('hunterShot', {
-            x: virtualX,
-            y: virtualY
-        });
     }
 
     updateDirections() {
@@ -556,20 +413,8 @@ class Gameboard {
 
     drawLives() {
         let xPos = VIRTUAL_WIDTH;//this.canvas.width;
-        let myChickIndex;
 
-        for(let i = 0; i< this.chicks.length; i++) {
-            if(this.chicks[i].id === this.myChickenId) {
-                myChickIndex = i;
-            }
-        }
-
-        if(myChickIndex === null) {
-            console.log("error, mychickenid is not found in chicks array");
-            return;
-        }
-
-        const livesLeft = this.chicks[myChickIndex].lives;
+        const livesLeft = this.chicks[this.myChickenId].lives;
         const livesLost = TOTAL_LIVES - livesLeft;
 
         this.ctx.font = Math.round(VIRTUAL_FONT_SIZE * this.canvas.height) + "px Arial";
@@ -579,10 +424,10 @@ class Gameboard {
 
         const xOffset = this.ctx.measureText(HEART_SYMBOL.repeat(livesLost)).width;
 
-        this.ctx.fillText(HEART_SYMBOL.repeat(livesLost), xPos - this.drawableX(10)  , this.canvas.height);
+        this.ctx.fillText(HEART_SYMBOL.repeat(livesLost), xPos - this.drawable(10)  , this.canvas.height);
 
         this.ctx.fillStyle = "red";
-        this.ctx.fillText(HEART_SYMBOL.repeat(livesLeft), xPos - this.drawableX(10) -xOffset  , this.canvas.height);
+        this.ctx.fillText(HEART_SYMBOL.repeat(livesLeft), xPos - this.drawable(10) -xOffset  , this.canvas.height);
 
 
     }

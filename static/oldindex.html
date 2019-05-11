@@ -1,0 +1,28 @@
+<html>
+<head>
+    <script type="text/javascript" src ="jquery.min.js"></script>
+    <script type="text/javascript" src ="socket.io.js"></script>
+    <script type="text/javascript" src ="game.js"></script>
+    <style>
+        body{
+            padding:5%;
+        }
+
+        canvas{
+            width:80vw;
+            height:37vw;
+            border:1px solid black;
+            background-image: url('img/xp_bg.jpg');
+            background-size:cover;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="game" oncontextmenu="return false;"></canvas> <!--width=1500 height=700 -->
+    <button id="start">Start Game</button>
+    <button id="countdown"> countdown</button>
+    <button id="joinRoom"> joinRoom</button>
+    <button id="crosshairPosition"> test animate crosshairPosition</button>
+    <button id="brutallyMurdered">brutally murder chicken 1</button>
+</body>
+</html>

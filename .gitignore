@@ -16,6 +16,7 @@ speed-measure-plugin.json
 
 # IDEs and editors
 /.idea
+/.vscode
 .project
 .classpath
 .c9/
@@ -45,5 +46,13 @@ testem.log
 .DS_Store
 Thumbs.db
 
+<<<<<<< HEAD
+#database stuff
+dbOptions.json
+
+#jwt
+config.js
+=======
 #database secret
 dbOptions.json
+>>>>>>> Bastian
