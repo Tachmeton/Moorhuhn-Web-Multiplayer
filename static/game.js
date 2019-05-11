@@ -197,15 +197,19 @@ $(document).ready(function() {
         }
         e = e || window.event;
 
-        var rect = c.getBoundingClientRect();
-        var canvasPosX = event.clientX - rect.left;
-        var canvasPosY = event.clientY - rect.top;
+        const rect = c.getBoundingClientRect();
+        const canvasPosX = event.clientX - rect.left;
+        const canvasPosY = event.clientY - rect.top;
+        const virtualX = canvasPosX * (VIRTUAL_WIDTH/game.canvas.width);
+        const virtualY = canvasPosY * (VIRTUAL_HEIGHT/game.canvas.height);
+
 
         console.log("canvasX: %s;canvasY:%s", canvasPosX, canvasPosY);
+        console.log("actual game: x-" + virtualX + ";y-" + virtualY);
 
         socket.emit('hunterShot', {
-            x: canvasPosX,
-            y: canvasPosY
+            x: virtualX,
+            y: virtualY
         });
     }
 
