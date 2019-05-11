@@ -26,6 +26,8 @@ const VIRTUAL_BULLET_HEIGHT = 0.071;
 const chickenRelativWidth = 0.072;
 const chickenRelativHeight = 0.066;
 
+const MY_ROOM = 1;
+
 const picLeft = new Image();
 const picLeftMe = new Image();
 const picUp = new Image();
@@ -102,7 +104,7 @@ $(document).ready(function() {
         chicks[1].alive = false;
     };
     document.getElementById("joinRoom").onclick = function(){
-        socket.emit("joinRoom", (1));
+        socket.emit("joinRoom", MY_ROOM);
     };
 
     // register keypresses
@@ -159,6 +161,11 @@ $(document).ready(function() {
         game.animatedShot.progress = REFRESH_RATE;
         game.animatedShot.x = data.x;
         game.animatedShot.y = data.y;
+    });
+
+    socket.on('Plsleave', function(room){
+        console.log("I want to leave the room!");
+        socket.emit('leaveRoom', room);
     });
 
     socket.on('disconnect', function() {

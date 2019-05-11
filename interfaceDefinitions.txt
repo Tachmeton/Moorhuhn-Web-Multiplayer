@@ -30,6 +30,7 @@ array of all chicks with following attributes
     -y
     -direction
     -alive
+    -lives
 
 'killChick': // sent from server
 -id : id of killed chicken
@@ -40,6 +41,7 @@ chicken object with attributes:
     -x
     -y
     -direction
+    -lives
 
 'chickInput': // sent from client   note: server should not rely on sent id here; server should check, whether chicken is alive
 -direction
@@ -54,3 +56,20 @@ coordinates of shot on canvas
     -x
     -y
 
+
+
+
+Interface to Database:
+
+SaveData(hunter, chicken, general)
+hunter one json object:
+    -username
+    -hits
+    -shots
+
+chicken array of json object:
+    -username
+    -livesLeft
+
+general json object:
+    -duration
