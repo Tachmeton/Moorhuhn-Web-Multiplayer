@@ -1,3 +1,4 @@
+/* eslint-disable no-multi-str */
 let activeGame;
 /**
  * JS for Login:
@@ -28,9 +29,9 @@ $('#login-card').on('click', '#login', function(e) {
                     $('#mainContainer').replaceWith(data);
                     showLobbies();
                 });
-    
+
             } else {
-                alert("could not load main");                
+                alert("could not load main");
             };
 
         },
@@ -43,7 +44,7 @@ $('#login-card').on('click', '#login', function(e) {
 /**
  * Requesets main-container.html
  * Returns HTML in parameter of Callback
- * @param {Function} done 
+ * @param {Function} done
  */
 function loadMain(done) {
     $.ajax({
@@ -78,9 +79,9 @@ $('#login-card').on('click', '#create-account', function(e) {
 
 /**
  * Clicking Register Button in register view
- * 
+ *
  * Sends POST Request to Server to create Account
- * Account could be created: redirects to main 
+ * Account could be created: redirects to main
  *                     else: show error
  */
 $('#login-card').on('click', '#register', function(e) {
@@ -137,9 +138,9 @@ $('#login-card').on('click', '#return-to-login', function(e) {
 
 /**
  * Click on Lobby Button in main
- * 
- * refreshes lobbies from server 
- * (uses /getLobbies) 
+ *
+ * refreshes lobbies from server
+ * (uses /getLobbies)
  */
 $('body').on('click', '#v-pills-home-tab', function() {
     showLobbies();
@@ -155,22 +156,7 @@ function showLobbies() {
             $('#lobby-holder').not(':first').empty();
             for(let i = 0; i < data.length; ++i) {
                 const lobbyFree = (data[i].joinedPlayers < data[i].maxPlayers)?true:false;
-                $("#lobby-holder").append(' \
-                    <div class="card">\
-                        <div class="card-body ' + ((lobbyFree)?"bg-success":"bg-danger") + '">\
-                            <div class="row">\
-                                <div class="col-sm">\
-                                ' + data[i].creator + '\
-                                </div>\
-                                <div class="col-sm">\
-                                ' + data[i].joinedPlayers + '/' + data[i].maxPlayers + '\
-                                </div>\
-                                <div class="col-sm">\
-                                <button onclick="joinLobby(this)" class="btn btn-sm btn-primary join-game" data-gameId="' + data[i].id + '" ' + ((lobbyFree)?'':'disabled="disabled"') + '>join Lobby</button>\
-                                </div>\
-                            </div>\
-                        </div>\
-                    </div>');
+                addLobbieToUi(lobbyFree, data[i].creator, data[i].joinedPlayers, data[i].maxPlayers, data[i].id);
             }
         } else {
             alert("lobbies konnten nicht geladen werden");
@@ -178,12 +164,31 @@ function showLobbies() {
     });
 }
 
+function addLobbieToUi(lobbyFree, creator, joinedPlayers, maxPlayers, id) {
+    $("#lobby-holder").prepend(' \
+    <div class="card">\
+        <div class="card-body ' + ((lobbyFree)?"bg-success":"bg-danger") + '">\
+            <div class="row">\
+                <div class="col-sm">\
+                ' + creator + '\
+                </div>\
+                <div class="col-sm">\
+                ' + joinedPlayers + '/' + maxPlayers + '\
+                </div>\
+                <div class="col-sm">\
+                <button onclick="joinLobby(this)" class="btn btn-sm btn-primary join-game" data-gameId="' + id + '" ' + ((lobbyFree)?'':'disabled="disabled"') + '>join Lobby</button>\
+                </div>\
+            </div>\
+        </div>\
+    </div>');
+}
+
 /**
  * GET Lobbies from server
- * 
+ *
  * Returns Array as Parameter of callback
- * 
- * @param {Function} done 
+ *
+ * @param {Function} done
  */
 function loadLobbies(done) {
     $.ajax({
@@ -202,12 +207,39 @@ function loadLobbies(done) {
     });
 }
 
+$('body').on('click', '#create-lobby', function() {
+    $.ajax({
+        type: "POST",
+        url: "http://localhost:3000/createLobby",
+        xhrFields:{
+            withCredentials:true
+        },
+        success: function(data,textStatus,jqXhr) {
+            if(jqXhr.status === 200){
+                loadGame(function(data,textStatus,jqXhr) {
+                    if(jqXhr.status === 200) {
+                        $('#mainContainer').replaceWith(data);
+                        activeGame = new Gameboard(lobbyId);
+                    } else {
+                        alert("/game.html konnte nicht geladen werden");
+                    }
+                });
+            } else {
+                alert("es konnte keine neue Lobby erstellt werden");
+            }
+        },
+        error: function(data) {
+            alert("es konnte keine lobby erstellt werden");
+        }
+    });
+});
+
 /**
  * Sends POST Request to Server to joinLobby
- * 
+ *
  * Joining lobby possible: dynamically load /game.html
- * 
- * @param {Element} el 
+ *
+ * @param {Element} el
  */
 function joinLobby(el) {
     const lobbyId = $(el).attr('data-gameId');
@@ -242,10 +274,10 @@ function joinLobby(el) {
 
 /**
  * Loads /game.html from server
- * 
+ *
  * Returns HTML as Parameter of callback
- * 
- * @param {Function} done 
+ *
+ * @param {Function} done
  */
 function loadGame(done) {
     $.ajax({
