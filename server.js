@@ -25,6 +25,8 @@ const LIVE_OF_CHICKEN = 5;
 const BULLETS = 10; 
 const TIME_ONE_GAME = 10;
 
+const MAX_Player = 2;
+
 server.listen(3000, function() {
 console.log("server now listening on port 3000");
 });
@@ -121,6 +123,45 @@ app.post("/registerUser", function(req,res) {
     }
 });
 
+app.post("/createLobby", function(req,res) {
+    jwt.verify(cookies.token, config.secret, function(err, decoded) {
+        if(err) {
+            // fehler: ungültiger token/cookie
+            console.log("Fehler beim createn der Lobby");
+        } else {
+            //konnte entschlüsselt werden
+            playerId = decoded.player_id;
+            console.log("player: " + playerId + " will eine Lobby createn");
+
+            roomnumber = createRoomnumber();
+
+            let hunter = {
+                id: player_id,
+                joined: false,
+                kills: 0,
+                bullets: BULLETS,
+                maxBullets: BULLETS,
+                shots: 0
+            };
+
+            let newRoom = {
+                id: roomnumber,
+                joinedPlayer: 1,
+                player: [],
+                hunter: hunter,
+                updateChicksInterval: null,
+                startRoomIntervall: null,
+                timeLeft: TIME_ONE_GAME,
+                timeLeftInterval: null,
+                syncChicksInterval: null
+            };
+
+            rooms[roomnumber] = newRoom;
+
+            res.status(200).send(createLobby());
+        }
+});
+
 /**
  * returns array of json objects with attributes:
  *    -creator
@@ -129,27 +170,20 @@ app.post("/registerUser", function(req,res) {
  *    -id
  */
 function getLobbies() {
-    return [
-        {
-            creator: "john der 4.",
-            maxPlayers: 4,
-            joinedPlayers: 2,
-            id: 7
-        },
-        {
-            creator: "john der 5.",
-            maxPlayers: 4,
-            joinedPlayers: 4,
-            id: 8
+    lobbyArray = [];
+
+    for(let i = 0; i < rooms.length; ++i){
+        let room = {
+            creator: rooms[i].hunter.id,
+            maxPlayer: MAX_PLAYER,
+            joinedPlayers: rooms[i].player.length,
+            id: rooms[i].id
         }
-        ,
-        {
-            creator: "john der 5.",
-            maxPlayers: 4,
-            joinedPlayers: 4,
-            id: 9
-        }
-    ]
+
+        lobbyArray.push(room);
+    }
+
+    return lobbyArray;
 }
 
 app.get("/getLobbies", function(req,res) {
@@ -170,8 +204,44 @@ app.post("/joinLobby", function(req,res) {
     console.log("player wants to join lobby");
     const lobbyId = req.query.lobbyId;
     if(lobbyId !== null) {
-        // irgendwie lobby beitrete action @bastian
-        res.status(200).send();
+        jwt.verify(cookies.token, config.secret, function(err, decoded) {
+            if(err) {
+                // fehler: ungültiger token/cookie
+                console.log("");
+            } else {
+                //konnte entschlüsselt werden
+                playerId = decoded.player_id;
+                if(rooms[lobbyId] != null && decoded.playerId != null){
+                    if(rooms[room].joinedPlayer < MAX_PLAYER){
+                        let chicken = {
+                            id: decoded.playerId,
+                            joined: false,
+                            x: Math.round(Math.random() * FeldLaengeX),
+                            y: Math.round(Math.random() * FeldLaengeY),
+                            direction: "w",
+                            lives: LIVE_OF_CHICKEN,
+                            alive: true
+                        };
+
+                        let place = rooms[lobbyId].player.length
+        
+                        rooms[lobbyId].player[place] = chicken;
+
+                        console.log("player: " + playerId + " first lobby join");
+                        
+                        //if player does not join -->kick it from lobby
+                        setTimeout(function(){
+                            if(rooms[lobbyId].player[place].joined === false){
+                                delete rooms[lobbyId].player[place];
+                                console.log(playerId + " has been removed cause no follow up join");
+                            }
+                        }, 10000);
+
+                        res.status(200).send();
+                    }
+                }
+            }
+        });
     } else {
         // fehler lobby kontte nicht beigetreten werden
         res.status(403).send();
@@ -196,6 +266,27 @@ io.on('connection', (client) => {
                     //konnte entschlüsselt werden
                     playerId = decoded.player_id;
                     console.log("player: " + playerId + " hat eine socket connection aufgebaut");
+
+                    if(playerId != null){
+                        for(let lobby of rooms){
+                            if(lobby.hunter.id === playerId && lobby.hunter.joined === false){
+                                client.join(lobby.id);
+                                lobby.hunter.joined = true;
+                            }else if(lobby.joinedPlayer === 1){
+                                //Nichts
+                            }else{
+                                for(let player of lobby.player){
+                                    if(player.id === playerId && player.joined === false){
+                                        client.join(lobby.id);
+                                        player.joined = true;
+                                    }
+                                }
+                            }
+                        }
+                        client.emit("Error", "Could not join Lobby");
+                        console.log(playerId + "could not join Lobby on 2nd join!");
+                        client.disconnect();
+                    }
                 }
             });
         } else {
@@ -215,97 +306,6 @@ io.on('connection', (client) => {
 
     client.on('event', data => { /* … */ });
     client.on('disconnect', () => { /* … */ });
-
-
-    client.on('joinRoom', (room) => {
-        //gute Eingabe?
-        if(room != undefined){
-
-        //Room gibts/ voll?
-        let roomthere = roomFull(room);
-        console.log(roomthere + "  " + client.id);
-
-        switch(roomthere){
-        case "first in Room":
-
-            client.join(room);
-
-            let hunter = {
-                id: client.id,
-                kills: 0,
-                bullets: BULLETS,
-                maxBullets: BULLETS,
-                shots: 0
-            }
-
-            let newRoom = {
-                id: room,
-                joinedPlayer: 1,
-                player: [],
-                hunter: hunter,
-                updateChicksInterval: null,
-                startRoomIntervall: null,
-                timeLeft: TIME_ONE_GAME,
-                timeLeftInterval: null,
-                syncChicksInterval: null
-            };
-
-            rooms[room] = newRoom;
-
-            //Success
-            console.log(client.id + " joined room" + room);
-            //client.emit("joined");
-        break;
-
-
-        case "Room exists and space left":
-
-            client.join(room);
-
-            if(rooms[room] != null){
-            rooms[room].joinedPlayer += 1;
-
-            let chicken = {
-                id: client.id,
-                x: Math.round(Math.random() * FeldLaengeX),
-                y: Math.round(Math.random() * FeldLaengeY),
-                direction: "w",
-                lives: LIVE_OF_CHICKEN,
-                alive: true
-            };
-
-            rooms[room].player.push(chicken);
-            }
-            //Success
-            console.log(client.id + "joined room" + room);
-            //client.emit("joined");
-        break;
-
-
-        case "Room exists but full":
-
-            //Error zurückgeben
-            console.log(client.id + " could not join room " + room);
-        break;
-
-
-        default:
-            //Error
-            console.log("Default Case Join Room");
-            console.log(client.id + " could not join room " + room);
-        break;
-        }
-
-        if(rooms[room].joinedPlayer === 1){
-        console.log(room + "zaehler");
-        rooms[room].startRoomInterval = setInterval(function(){waitonLobbyFull(room,client)},3000);
-        }
-
-    }else{
-        console.log(client.id + " tried to join Room but it is undefined!");
-    }
-
-    });
 
     client.on('leaveRoom', (room) => {
 
@@ -406,43 +406,6 @@ io.on('connection', (client) => {
     });
 
 });
-
-
-
-function roomFull(room){
-
-    let roomState = 0;
-    //0 ist kein Room, 1 room noch free aber nicht erster, 2 room full
-
-    if(rooms[room] != null){
-        console.log("joined Player: " + rooms[room].joinedPlayer);
-        if(rooms[room].joinedPlayer < 2){
-            roomState = 1;
-        }else{
-            roomState = 2;
-        }
-    }
-
-    console.log("roomState: " + roomState);
-
-    switch(roomState){
-        case 0:
-        return "first in Room";
-        break;
-
-        case 1:
-        return "Room exists and space left";
-        break;
-
-        case 2:
-        return "Room exists but full";
-        break;
-
-        default:
-        return "error --default";
-        break;
-    }
-}
 
 
 function waitonLobbyFull(room, client){
@@ -563,3 +526,170 @@ function cookieToJson(cookie) {
     return returnJson;
     
 }
+
+
+
+
+
+
+
+
+
+
+
+//Hilfsfunktionen
+
+function createRoomNumber() {
+
+    let uniqueroomnumber = false;
+    while(!uniqueroomnumber){
+        roomnumber = Math.round(Math.random() * 10000);
+
+        for(let i = 0; i < rooms.length; ++i){
+            if(rooms[roomnumber] != undefined){
+                return createRoomNumber();
+            }
+        }
+        return roomnumber;
+    }
+}
+
+
+
+
+
+
+
+
+
+/*
+---------------------------------------
+    Trash which might be used later
+---------------------------------------
+
+client.on('joinRoom', (room) => {
+        //gute Eingabe?
+        if(room != undefined){
+
+        //Room gibts/ voll?
+        let roomthere = roomFull(room);
+        console.log(roomthere + "  " + client.id);
+
+        switch(roomthere){
+        case "first in Room":
+
+            client.join(room);
+
+            let hunter = {
+                id: client.id,
+                kills: 0,
+                bullets: BULLETS,
+                maxBullets: BULLETS,
+                shots: 0
+            }
+
+            let newRoom = {
+                id: room,
+                joinedPlayer: 1,
+                player: [],
+                hunter: hunter,
+                updateChicksInterval: null,
+                startRoomIntervall: null,
+                timeLeft: TIME_ONE_GAME,
+                timeLeftInterval: null,
+                syncChicksInterval: null
+            };
+
+            rooms[room] = newRoom;
+
+            //Success
+            console.log(client.id + " joined room" + room);
+            //client.emit("joined");
+        break;
+
+
+        case "Room exists and space left":
+
+            client.join(room);
+
+            if(rooms[room] != null){
+            rooms[room].joinedPlayer += 1;
+
+            let chicken = {
+                id: client.id,
+                x: Math.round(Math.random() * FeldLaengeX),
+                y: Math.round(Math.random() * FeldLaengeY),
+                direction: "w",
+                lives: LIVE_OF_CHICKEN,
+                alive: true
+            };
+
+            rooms[room].player.push(chicken);
+            }
+            //Success
+            console.log(client.id + "joined room" + room);
+            //client.emit("joined");
+        break;
+
+
+        case "Room exists but full":
+
+            //Error zurückgeben
+            console.log(client.id + " could not join room " + room);
+        break;
+
+
+        default:
+            //Error
+            console.log("Default Case Join Room");
+            console.log(client.id + " could not join room " + room);
+        break;
+        }
+
+        if(rooms[room].joinedPlayer === 1){
+        console.log(room + "zaehler");
+        rooms[room].startRoomInterval = setInterval(function(){waitonLobbyFull(room,client)},3000);
+        }
+
+    }else{
+        console.log(client.id + " tried to join Room but it is undefined!");
+    }
+
+    });
+    
+    
+    
+    function roomFull(room){
+
+    let roomState = 0;
+    //0 ist kein Room, 1 room noch free aber nicht erster, 2 room full
+
+    if(rooms[room] != null){
+        console.log("joined Player: " + rooms[room].joinedPlayer);
+        if(rooms[room].joinedPlayer < 2){
+            roomState = 1;
+        }else{
+            roomState = 2;
+        }
+    }
+
+    console.log("roomState: " + roomState);
+
+    switch(roomState){
+        case 0:
+        return "first in Room";
+        break;
+
+        case 1:
+        return "Room exists and space left";
+        break;
+
+        case 2:
+        return "Room exists but full";
+        break;
+
+        default:
+        return "error --default";
+        break;
+    }
+}*/
