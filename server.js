@@ -350,6 +350,7 @@ io.on('connection', (client) => {
                         --lobby.joinedPlayer;
                     }
                 }
+            }
         }
     });
 
