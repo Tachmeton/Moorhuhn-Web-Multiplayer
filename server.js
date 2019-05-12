@@ -137,6 +137,7 @@ app.post("/createLobby", function(req,res) {
 
             let hunter = {
                 id: player_id,
+                socket_id: null,
                 joined: false,
                 kills: 0,
                 bullets: BULLETS,
@@ -160,6 +161,7 @@ app.post("/createLobby", function(req,res) {
 
             res.status(200).send(createLobby());
         }
+    });
 });
 
 /**
@@ -213,6 +215,9 @@ app.post("/joinLobby", function(req,res) {
                 playerId = decoded.player_id;
                 if(rooms[lobbyId] != null && decoded.playerId != null){
                     if(rooms[room].joinedPlayer < MAX_PLAYER){
+
+                        ++rooms[room].joinedPlayer;
+
                         let chicken = {
                             id: decoded.playerId,
                             joined: false,
@@ -278,7 +283,12 @@ io.on('connection', (client) => {
                                 for(let player of lobby.player){
                                     if(player.id === playerId && player.joined === false){
                                         client.join(lobby.id);
+                                        player.socket_id = client.id;
                                         player.joined = true;
+
+                                        if(lobby.joinedPlayer === MAX_Player && allJoined(lobby) === true){
+                                            startGame(lobby.id);
+                                        }
                                     }
                                 }
                             }
@@ -297,21 +307,59 @@ io.on('connection', (client) => {
         console.log(e);
         client.disconnect();
     }
-    
-
-
-
     console.log("New Connection: " + client.id);
-    //socket.emit("connect");
 
-    client.on('event', data => { /* … */ });
-    client.on('disconnect', () => { /* … */ });
+
+
+
+
+
+    client.on('disconnect', () => {
+        for (let lobby of rooms){
+            if(lobby.hunter.id === playerId){
+                client.leave(lobby.id);
+                if(lobby.syncChicksInterval != null){
+                    if(lobby.player.length > 0){
+                        let lastJoined = lobby.player.length - 1;
+    
+                        let newHunter = {
+                                id: lobby.player[lastJoined].id,
+                                socket_id: lobby.player[lastJoined].socket_id,
+                                joined: lobby.player[lastJoined].joined,
+                                kills: 0,
+                                bullets: BULLETS,
+                                maxBullets: BULLETS,
+                                shots: 0
+                        };
+
+                        lobby.hunter = newHunter;
+                        delete lobby.player[lastJoined];
+                    }else{
+                        delete lobby;
+                    }
+                }else{
+                    io.to(lobby.id).emit("Hunter left Midgame");
+                }
+            }else if(lobby.joinedPlayer === 1){
+                //Nichts
+            }else{
+                for(let player of lobby.player){
+                    if(player.id === playerId ){
+                        client.leave(lobby.id);
+                        delete player;          //could leave a null object in rooms.player???
+                        --lobby.joinedPlayer;
+                    }
+                }
+        }
+    });
 
     client.on('leaveRoom', (room) => {
 
         console.log("wants to leave room " +  room);
 
         if(room != undefined && room != null){
+
+            //whats missing: left of local array...
 
             client.leave(room);
             console.log("Room " + room + ": " + client.id + " left Room!");
@@ -408,18 +456,7 @@ io.on('connection', (client) => {
 });
 
 
-function waitonLobbyFull(room, client){
-    console.log(room + " is waiting!");
-    if(rooms[room] != null && rooms[room].joinedPlayer == 2){
-        startGame(room, client);
-        clearInterval(rooms[room].startRoomInterval);
-    }
-}
-
-
-
-
-function startGame(room,client){
+function startGame(room){
     console.log("Room " + room + ": Starting soon!");
     io.to(room).emit("startingSoon", (5));
 
@@ -472,7 +509,7 @@ function startGame(room,client){
     },30);
 
         rooms[room].syncChicksInterval = setInterval(function(){
-            client.to(room).emit("syncChicks", (rooms[room].player));
+            io.to(room).emit("syncChicks", (rooms[room].player));
         },500);
 
     rooms[room].timeLeftInterval = setInterval(function(){
@@ -555,6 +592,20 @@ function createRoomNumber() {
 }
 
 
+function allJoined(lobby){
+    let allJoined = true;
+    
+    if(lobby != null){
+        if(lobby.hunter.joined == true){
+            for(let player of lobby.player){
+                if(player.joined === false){
+                    allJoined = false;
+                }
+            }
+        }
+    }
+    return allJoined;
+}
 
 
 
@@ -692,4 +743,14 @@ client.on('joinRoom', (room) => {
         return "error --default";
         break;
     }
-}*/
+}
+
+
+function waitonLobbyFull(room, client){
+    console.log(room + " is waiting!");
+    if(rooms[room] != null && rooms[room].joinedPlayer == 2){
+        startGame(room, client);
+        clearInterval(rooms[room].startRoomInterval);
+    }
+}
+*/
