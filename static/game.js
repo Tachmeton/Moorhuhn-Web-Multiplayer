@@ -515,13 +515,13 @@ class Gameboard {
 
     createStatisticsText(data) {
         const mainContent = document.getElementById("main-content");
-        mainContent.innerHTML = '<div id="stats" class="p-2 text-white bg-primary"></div>';
+        mainContent.innerHTML = '<table id="stats" class="p-2 text-white bg-primary"></table>';
 
         const statisticsDiv = document.getElementById("stats");
-        stats.innerHTML += "Hunter: " + data.hunter.username + " <br>Shots: " + data.hunter.shots + "<br>Hit Ratio: " + Math.round(100 * data.hunter.hits/data.hunter.shots) / 100 + "<br>";
+        stats.innerHTML += "<tr><td>Hunter: </td><td>" + data.hunter.username + "</tr><tr><td>Shots: </td><td>" + data.hunter.shots + "</td></tr><tr><td>Hit Ratio: </td><td>" + Math.round(100 * data.hunter.hits/data.hunter.shots) / 100 + "</td></tr>";
 
         for(let chicken in data.chicken) {
-            stats.innerHTML += "<br>Chicken " + chicken + ": " + data.chicken[chicken].username + "<br>Lifes left: " + data.chicken[chicken].lifesLeft;
+            stats.innerHTML += "<tr><td>Chicken " + chicken + ": </td><td>" + data.chicken[chicken].username + "</td></tr><tr><td>Lifes left: </td><td>" + data.chicken[chicken].lifesLeft + "</td></tr>";
         }
     }
 }
