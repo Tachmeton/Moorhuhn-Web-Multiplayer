@@ -209,9 +209,7 @@ app.get("/getLobbies", function(req,res) {
 
 
 app.post("/joinLobby", function(req,res) {
-    console.log("player wants to join lobby");
-    const lobbyId = req.query.lobbyId;
-    console.log("lobbyId: " + lobbyId);
+    const lobbyId = req.body.lobbyId;
     if(lobbyId !== null && lobbyId != undefined) {
         jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
             if(err) {
