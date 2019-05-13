@@ -435,16 +435,18 @@ class Gameboard {
         this.ctx.textAlign = "right";
         this.ctx.textBaseline = "bottom";
 
+        let xOffsetLeft;
         if(livesLeft === 0) {
             xOffsetLeft = 0;
         } else {
-            const xOffsetLeft = this.ctx.measureText(HEART_SYMBOL.repeat(livesLeft)).width;
+            xOffsetLeft = this.ctx.measureText(HEART_SYMBOL.repeat(livesLeft)).width;
         }
 
+        let livesLost;
         if(livesLost === 0) {
-            livesLost = 0;
+            xOffsetLost = 0;
         } else {
-            const xOffsetLost = this.ctx.measureText(HEART_SYMBOL.repeat(livesLost)).width;
+            xOffsetLost = this.ctx.measureText(HEART_SYMBOL.repeat(livesLost)).width;
         }
         this.ctx.fillText(HEART_SYMBOL.repeat(livesLost), this.canvas.width - this.drawableX(10) , this.canvas.height);
 
