@@ -159,9 +159,9 @@ app.post("/createLobby", function(req,res) {
 
             rooms[roomnumber] = newRoom;
 
-            console.log("player: " + playerId + "has created a lobby");
+            console.log("player: " + playerId + " has created a lobby");
 
-            res.status(200);
+            res.status(200).send();
         }
     });
 });
@@ -277,21 +277,21 @@ io.on('connection', (client) => {
                     console.log("player: " + playerId + " hat eine socket connection aufgebaut");
 
                     if(playerId != null){
-                        for(let lobby of rooms){
-                            if(lobby.hunter.id === playerId && lobby.hunter.joined === false){
-                                client.join(lobby.id);
-                                lobby.hunter.joined = true;
-                            }else if(lobby.joinedPlayer === 1){
+                        for(let lobby in rooms){
+                            if(rooms[lobby].hunter.id === playerId && rooms[lobby].hunter.joined === false){
+                                client.join(rooms[lobby].id);
+                                rooms[lobby].hunter.joined = true;
+                            }else if(rooms[lobby].joinedPlayer === 1){
                                 //Nichts
                             }else{
-                                for(let player of lobby.player){
-                                    if(player.id === playerId && player.joined === false){
-                                        client.join(lobby.id);
-                                        player.socket_id = client.id;
-                                        player.joined = true;
+                                for(let playerkey in rooms[lobby].player){
+                                    if(rooms[lobby].player[playerkey].id === playerId && rooms[lobby].player[playerkey].joined === false){
+                                        client.join(rooms[lobby].id);
+                                        rooms[lobby].player[playerkey].socket_id = client.id;
+                                        rooms[lobby].player[playerkey].joined = true;
 
-                                        if(lobby.joinedPlayer === MAX_Player && allJoined(lobby) === true){
-                                            startGame(lobby.id);
+                                        if(rooms[lobby].joinedPlayer === MAX_Player && allJoined(rooms[lobby]) === true){
+                                            startGame(rooms[lobby].id);
                                         }
                                     }
                                 }
