@@ -558,11 +558,11 @@ function updateChicks(room){
                 break;
             case 'e':
                 rooms[room].player[playerkey].x += xSpeed;
-                rooms[room].player[playerkey].x = (rooms[room].player[playerkey].x > FeldLaengeX) ?FeldLaengeX: rooms[room].player[playerkey].x;
+                rooms[room].player[playerkey].x = (rooms[room].player[playerkey].x >= FeldLaengeX * (1-VIRTUAL_CHICKEN_WIDTH)) ?FeldLaengeX * (1-VIRTUAL_CHICKEN_WIDTH): rooms[room].player[playerkey].x;
             break;
             case 's':
                 rooms[room].player[playerkey].y += ySpeed;
-                rooms[room].player[playerkey].y = (rooms[room].player[playerkey].y > FeldLaengeY) ? FeldLaengeY: rooms[room].player[playerkey].y;
+                rooms[room].player[playerkey].y = (rooms[room].player[playerkey].y >= FeldLaengeY * (1-VIRTUAL_CHICKEN_HEIGHT)) ? FeldLaengeY * (1-VIRTUAL_CHICKEN_HEIGHT): rooms[room].player[playerkey].y;
                 break;
             case 'w':
                 rooms[room].player[playerkey].x -= xSpeed;

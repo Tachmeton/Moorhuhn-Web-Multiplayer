@@ -312,11 +312,11 @@ class Gameboard {
                     break;
                 case 'e':
                     this.chicks[i].x += xSpeed;
-                    this.chicks[i].x = (this.chicks[i].x > VIRTUAL_WIDTH) ?VIRTUAL_WIDTH: this.chicks[i].x;
+                    this.chicks[i].x = (this.chicks[i].x >= VIRTUAL_WIDTH * (1-VIRTUAL_CHICKEN_WIDTH)) ?VIRTUAL_WIDTH * (1-VIRTUAL_CHICKEN_WIDTH): this.chicks[i].x;
                   break;
                 case 's':
                     this.chicks[i].y += ySpeed;
-                    this.chicks[i].y = (this.chicks[i].y > VIRTUAL_HEIGHT) ? VIRTUAL_HEIGHT: this.chicks[i].y;
+                    this.chicks[i].y = (this.chicks[i].y >= VIRTUAL_HEIGHT * (1-VIRTUAL_CHICKEN_HEIGHT)) ? VIRTUAL_HEIGHT * (1-VIRTUAL_CHICKEN_HEIGHT): this.chicks[i].y;
                     break;
                 case 'w':
                     this.chicks[i].x -= xSpeed;
