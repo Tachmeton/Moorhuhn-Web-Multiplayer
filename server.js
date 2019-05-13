@@ -498,7 +498,7 @@ io.on('connection', (client) => {
     
             if(room != undefined && room != null){
                 if(client.id === rooms[room].hunter.socket_id){
-                    rooms[room].hunter.shots = BULLETS;
+                    rooms[room].hunter.bullets = BULLETS;
                 }
             }
     });
