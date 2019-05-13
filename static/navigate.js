@@ -298,8 +298,5 @@ function loadGame(done) {
 }
 
 $('body').on('click', '#backToLobby', function() {
-    loadMain(function(data) {
-        $('#mainContainer').replaceWith('<div id="mainContainer" ' + data + ' class="container"></div>');
-        showLobbies();
-    });
+    window.location = "https://chlorhuhn.rocks";
 });
