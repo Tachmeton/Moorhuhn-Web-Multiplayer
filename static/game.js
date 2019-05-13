@@ -59,7 +59,7 @@ class Gameboard {
         this.ctx = this.canvas.getContext("2d");
 
         window.onresize = function() {
-            this.resized();
+            thisSave.resized();
         };
         this.resized();
 
@@ -429,14 +429,23 @@ class Gameboard {
         const livesLeft = this.chicks[myChickIndex].lives;
         const livesLost = TOTAL_LIVES - livesLeft;
 
+
         this.ctx.font = Math.round(VIRTUAL_FONT_SIZE * this.canvas.height) + "px Arial";
         this.ctx.fillStyle = "black";
         this.ctx.textAlign = "right";
         this.ctx.textBaseline = "bottom";
 
-        const xOffsetLost = this.ctx.measureText(HEART_SYMBOL.repeat(livesLost)).width;
-        const xOffsetLeft = this.ctx.measureText(HEART_SYMBOL.repeat(livesLeft)).width;
+        if(livesLeft === 0) {
+            xOffsetLeft = 0;
+        } else {
+            const xOffsetLeft = this.ctx.measureText(HEART_SYMBOL.repeat(livesLeft)).width;
+        }
 
+        if(livesLost === 0) {
+            livesLost = 0;
+        } else {
+            const xOffsetLost = this.ctx.measureText(HEART_SYMBOL.repeat(livesLost)).width;
+        }
         this.ctx.fillText(HEART_SYMBOL.repeat(livesLost), this.canvas.width - this.drawableX(10) , this.canvas.height);
 
         this.ctx.fillStyle = "red";
