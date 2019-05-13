@@ -159,7 +159,9 @@ app.post("/createLobby", function(req,res) {
 
             rooms[roomnumber] = newRoom;
 
-            res.status(200).send(createLobby());
+            console.log("player: " + playerId + "has created a lobby");
+
+            res.send(roomnumber);
         }
     });
 });
@@ -188,6 +190,7 @@ function getLobbies() {
     return lobbyArray;
 }
 
+
 app.get("/getLobbies", function(req,res) {
     if(req.cookies.token) {
         jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
@@ -202,19 +205,6 @@ app.get("/getLobbies", function(req,res) {
     }
 });
 
-app.post("/createLobby", function(req,res) {
-    if(req.cookies.token) {
-        jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
-            if(err) {
-                res.status(400).send("no token sent");
-            } else {
-                res.status(200).send();
-            }
-        });
-    } else {
-        res.status(400).send("no token sent");
-    }
-});
 
 app.post("/joinLobby", function(req,res) {
     console.log("player wants to join lobby");

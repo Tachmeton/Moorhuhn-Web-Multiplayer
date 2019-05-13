@@ -214,11 +214,11 @@ $('body').on('click', '#create-lobby', function() {
         xhrFields:{
             withCredentials:true
         },
-        success: function(data,textStatus,jqXhr) {
+        success: function(lobbId,textStatus,jqXhr) {
             if(jqXhr.status === 200){
-                loadGame(function(data,textStatus,jqXhr) {
+                loadGame(function(gamehtml,textStatus,jqXhr) {
                     if(jqXhr.status === 200) {
-                        $('#mainContainer').replaceWith(data);
+                        $('#mainContainer').replaceWith(gamehtml);
                         activeGame = new Gameboard(lobbyId);
                     } else {
                         alert("/game.html konnte nicht geladen werden");
