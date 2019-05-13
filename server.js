@@ -25,7 +25,7 @@ const LIVE_OF_CHICKEN = 5;
 const BULLETS = 10;
 const TIME_ONE_GAME = 10;
 
-const MAX_Player = 2;
+const MAX_PLAYER = 2;
 
 server.listen(3000, function() {
 console.log("server now listening on port 3000");
@@ -176,12 +176,12 @@ app.post("/createLobby", function(req,res) {
 function getLobbies() {
     lobbyArray = [];
 
-    for(let i = 0; i < rooms.length; ++i){
+    for(let lobby in rooms){
         let room = {
-            creator: rooms[i].hunter.id,
+            creator: rooms[lobby].hunter.id,
             maxPlayer: MAX_PLAYER,
-            joinedPlayers: rooms[i].player.length,
-            id: rooms[i].id
+            joinedPlayers: rooms[lobby].player.length,
+            id: rooms[lobby].id
         }
 
         lobbyArray.push(room);
@@ -275,11 +275,13 @@ io.on('connection', (client) => {
                     //konnte entschlüsselt werden
                     playerId = decoded.player_id;
                     console.log("player: " + playerId + " hat eine socket connection aufgebaut");
-
+                    let didjoin = false;
                     if(playerId != null){
                         for(let lobby in rooms){
                             if(rooms[lobby].hunter.id === playerId && rooms[lobby].hunter.joined === false){
                                 client.join(rooms[lobby].id);
+                                console.log(playerId + " joined Lobby on 2nd join!");
+                                didjoin = true;
                                 rooms[lobby].hunter.joined = true;
                             }else if(rooms[lobby].joinedPlayer === 1){
                                 //Nichts
@@ -287,19 +289,23 @@ io.on('connection', (client) => {
                                 for(let playerkey in rooms[lobby].player){
                                     if(rooms[lobby].player[playerkey].id === playerId && rooms[lobby].player[playerkey].joined === false){
                                         client.join(rooms[lobby].id);
+                                        console.log(playerId + " joined Lobby on 2nd join!");
+                                        didjoin = true;
                                         rooms[lobby].player[playerkey].socket_id = client.id;
                                         rooms[lobby].player[playerkey].joined = true;
 
-                                        if(rooms[lobby].joinedPlayer === MAX_Player && allJoined(rooms[lobby]) === true){
+                                        if(rooms[lobby].joinedPlayer === MAX_PLAYER && allJoined(rooms[lobby]) === true){
                                             startGame(rooms[lobby].id);
                                         }
                                     }
                                 }
                             }
                         }
-                        client.emit("Error", "Could not join Lobby");
-                        console.log(playerId + "could not join Lobby on 2nd join!");
-                        client.disconnect();
+                        if(!didjoin){
+                            client.emit("Error", "Could not join Lobby");
+                            console.log(playerId + "could not join Lobby on 2nd join!");
+                            client.disconnect();
+                        }
                     }
                 }
             });
@@ -319,17 +325,17 @@ io.on('connection', (client) => {
 
 
     client.on('disconnect', () => {
-        for (let lobby of rooms){
-            if(lobby.hunter.id === playerId){
-                client.leave(lobby.id);
-                if(lobby.syncChicksInterval != null){
-                    if(lobby.player.length > 0){
-                        let lastJoined = lobby.player.length - 1;
+        for (let lobby in rooms){
+            if(rooms[lobby].hunter.id === playerId){
+                client.leave(rooms[lobby].id);
+                if(rooms[lobby].syncChicksInterval != null){
+                    if(rooms[lobby].player.length > 0){
+                        let lastJoined = rooms[lobby].player.length - 1;
     
                         let newHunter = {
-                                id: lobby.player[lastJoined].id,
-                                socket_id: lobby.player[lastJoined].socket_id,
-                                joined: lobby.player[lastJoined].joined,
+                                id: rooms[lobby].player[lastJoined].id,
+                                socket_id: rooms[lobby].player[lastJoined].socket_id,
+                                joined: rooms[lobby].player[lastJoined].joined,
                                 kills: 0,
                                 bullets: BULLETS,
                                 maxBullets: BULLETS,
@@ -337,21 +343,21 @@ io.on('connection', (client) => {
                         };
 
                         lobby.hunter = newHunter;
-                        delete lobby.player[lastJoined];
+                        delete rooms[lobby].player[lastJoined];
                     }else{
-                        delete lobby;
+                        delete rooms[lobby];
                     }
                 }else{
-                    io.to(lobby.id).emit("Hunter left Midgame");
+                    io.to(rooms[lobby].id).emit("Hunter left Midgame");
                 }
-            }else if(lobby.joinedPlayer === 1){
+            }else if(rooms[lobby].joinedPlayer === 1){
                 //Nichts
             }else{
-                for(let player of lobby.player){
-                    if(player.id === playerId ){
-                        client.leave(lobby.id);
+                for(let playerkey of rooms[lobby].player){
+                    if(rooms[lobby].player[playerkey].id === playerId ){
+                        client.leave(rooms[lobby].id);
                         delete player;          //could leave a null object in rooms.player???
-                        --lobby.joinedPlayer;
+                        --rooms[lobby].joinedPlayer;
                     }
                 }
             }
