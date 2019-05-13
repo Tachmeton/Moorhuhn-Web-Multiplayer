@@ -550,7 +550,7 @@ function startGame(room){
                 for(playerkey in rooms[room].player){
                     let chicken = {
                         username: rooms[room].player[playerkey].id,
-                        livesLeft: rooms[room].player[playerkey].lives
+                        lifesLeft: rooms[room].player[playerkey].lives
                     };
 
                     saveChicken.push(chicken);
