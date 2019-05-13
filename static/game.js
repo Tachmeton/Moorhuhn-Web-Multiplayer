@@ -82,7 +82,7 @@ class Gameboard {
 
 
         // create socket connection and event actions
-        this.socket = io.connect('http://localhost:3000');
+        this.socket = io.connect('https://chlorhuhn.rocks', {secure:true});
 
         this.socket.on('connect', function() {
             console.log("socket connection established");
