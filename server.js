@@ -23,7 +23,7 @@ const VIRTUAL_CHICKEN_HEIGHT = 0.14;
 
 const LIVE_OF_CHICKEN = 5;
 const BULLETS = 10;
-const TIME_ONE_GAME = 100;
+const TIME_ONE_GAME = 10;
 
 const MAX_PLAYER = 2;
 
@@ -532,7 +532,7 @@ function startGame(room){
 
                 let saveHunter = {
                     username: rooms[room].hunter.id,
-                    hits: rooms[rooms].hunter.hits,
+                    hits: rooms[room].hunter.hits,
                     shots: rooms[room].hunter.shots
                 };
 
@@ -551,7 +551,7 @@ function startGame(room){
                     duration: TIME_ONE_GAME
                 };
 
-                let writeToDatabase = saveGame(saveHunter, saveChicken, general);
+                let writeToDatabase = saveGame(saveHunter, saveChicken, saveGeneral);
 
                 if(writeToDatabase === 0){
                     console.log("Room " + room + ": " + "Write to Database worked!");
@@ -565,20 +565,16 @@ function startGame(room){
                     general: saveGeneral
                 }
 
-                io.to(room).emit("EndofGame", endGameObject );
-
-                //console.log(io.sockets.connected);
-
-                io.sockets.connected[rooms[room].hunter.socket_id].leave(room);
-
-                for(let playerkey in rooms[room].player){
-                    io.sockets.connected[rooms[room].player[playerkey].socket_id].leave(room);
-                }
-                //io.to(room).emit("Plsleave", room);
-
-                //console.log(io.sockets);
+                io.to(room).emit("endOfGame", endGameObject);
 
                 setTimeout(function(){
+                    io.sockets.connected[rooms[room].hunter.socket_id].leave(room);
+
+                    for(let playerkey in rooms[room].player){
+                        io.sockets.connected[rooms[room].player[playerkey].socket_id].leave(room);
+                    }
+
+
                     delete rooms[room];
                 }, 2000);
 

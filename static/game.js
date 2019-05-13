@@ -129,6 +129,18 @@ class Gameboard {
             thisSave.animatedShot.y = data.y;
         });
 
+        this.socket.on('endOfGame', function(data) {
+            console.log("socket.io: sent endOfGame");
+            console.log(data);
+            clearInterval(thisSave.gameInterval);
+            clearInterval(thisSave.timeLeftInterval);
+            if(thisSave.myRole === 'h') {
+                $(thisSave.canvas).css("cursor", "default");
+            }
+
+            thisSave.socket.close();
+        });
+
         this.socket.on('disconnect', function() {
             console.log("socket connection was closed");
         });

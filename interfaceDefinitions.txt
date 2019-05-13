@@ -58,7 +58,7 @@ coordinates of shot on canvas
 
 'Hunter left Midgame' //sent from server --> should do sth.
 
-'EndofGame': //sent from server on Game EndofGame
+'endOfGame': //sent from server on Game EndofGame
 json object of
 hunter one json object:
     -username
