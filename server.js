@@ -22,7 +22,7 @@ const VIRTUAL_CHICKEN_WIDTH = 0.072;
 const VIRTUAL_CHICKEN_HEIGHT = 0.14;
 
 const LIVE_OF_CHICKEN = 5;
-const BULLETS = 10; 
+const BULLETS = 10;
 const TIME_ONE_GAME = 10;
 
 const MAX_Player = 2;
@@ -78,7 +78,7 @@ app.use(express.static("static"));
  *  input:      password and user as JS
 ON
  *  res-status: 403 - wrong password or username
- *              200 - authentication successfull  
+ *              200 - authentication successfull
  */
 app.post("/checkAuthentication", function(req,res) {
     try{
@@ -202,6 +202,20 @@ app.get("/getLobbies", function(req,res) {
     }
 });
 
+app.post("/createLobby", function(req,res) {
+    if(req.cookies.token) {
+        jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
+            if(err) {
+                res.status(400).send("no token sent");
+            } else {
+                res.status(200).send();
+            }
+        });
+    } else {
+        res.status(400).send("no token sent");
+    }
+});
+
 app.post("/joinLobby", function(req,res) {
     console.log("player wants to join lobby");
     const lobbyId = req.query.lobbyId;
@@ -257,7 +271,7 @@ app.post("/joinLobby", function(req,res) {
 io.on('connection', (client) => {
 
     console.log("New Connection: " + client.id);
-    
+
     let playerId;
     try{
         const cookies = cookieToJson(client.handshake.headers.cookie);
@@ -307,6 +321,13 @@ io.on('connection', (client) => {
         console.log(e);
         client.disconnect();
     }
+<<<<<<< HEAD
+=======
+
+
+
+
+>>>>>>> franz
     console.log("New Connection: " + client.id);
 
 
@@ -394,7 +415,7 @@ io.on('connection', (client) => {
     client.on('hunterShot', (coordinates) => {
 
         let room = Object.keys(client.rooms).filter(item => item!=client.id);
-        
+
         if(room != undefined && room != null){
             console.log("room: " + room);
             let chickenWidth = 0;
@@ -505,7 +526,7 @@ function startGame(room){
             setTimeout(function(){
                 delete rooms[room];
             }, 2000);
-            
+
         }
     },30);
 
@@ -562,6 +583,7 @@ function cookieToJson(cookie) {
     }
 
     return returnJson;
+<<<<<<< HEAD
     
 }
 
@@ -755,3 +777,7 @@ function waitonLobbyFull(room, client){
     }
 }
 */
+=======
+
+}
+>>>>>>> franz
