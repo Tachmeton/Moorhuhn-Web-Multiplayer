@@ -532,61 +532,80 @@ function startGame(room){
 
                 console.log("Room: " + room + " Game is over!");
 
-                let saveHunter = {
-                    username: rooms[room].hunter.id,
-                    hits: rooms[room].hunter.kills,
-                    shots: rooms[room].hunter.shots
-                };
-
-                let saveChicken = [];
-
+                const playerIds = [];
+                playerIds.push([rooms[room].hunter.id]);
                 for(playerkey in rooms[room].player){
-                    let chicken = {
-                        username: rooms[room].player[playerkey].id,
-                        lifesLeft: rooms[room].player[playerkey].lives
-                    };
-
-                    saveChicken.push(chicken);
+                    playerIds.push(rooms[room].player[playerkey].id);
                 }
 
-                saveGeneral = {
-                    duration: TIME_ONE_GAME
-                };
+                getUsernames(playerIds, function(response) {
+                    if(response.success) {
+                        const idToNameMap = response.map;
 
-                let writeToDatabase = saveGame(saveHunter, saveChicken, saveGeneral, function(success) {
-                    if(success) {
-                        console.log("Room " + room + ": " + "Write to Database worked!");
+                        let saveHunter = {
+                            username: idToNameMap[rooms[room].hunter.id],
+                            id:rooms[room].hunter.id,
+                            hits: rooms[room].hunter.kills,
+                            shots: rooms[room].hunter.shots
+                        };
+        
+                        let saveChicken = [];
+        
+                        for(playerkey in rooms[room].player){
+                            let chicken = {
+                                username: idToNameMap[rooms[room].player[playerkey].id] ,
+                                id: rooms[room].player[playerkey].id,
+                                lifesLeft: rooms[room].player[playerkey].lives
+                            };
+        
+                            saveChicken.push(chicken);
+                        }
+        
+                        saveGeneral = {
+                            duration: TIME_ONE_GAME
+                        };
+        
+                        let writeToDatabase = saveGame(saveHunter, saveChicken, saveGeneral, function(success) {
+                            if(success) {
+                                console.log("Room " + room + ": " + "Write to Database worked!");
+                            } else {
+                                console.log("Room " + room + ": " + "Write to Database did not work!");
+                            }
+                        });
+        
+                        let endGameObject = {
+                            hunter: saveHunter,
+                            chicken: saveChicken,
+                            general: saveGeneral
+                        }
+        
+                        console.log("send end of game emit");
+                        io.to(room).emit("endOfGame", endGameObject);
+                        console.log("nach send end of game emit");
+                        setTimeout(function(){
+                            console.log("timeout hunter");
+                            if(io.sockets.connected[rooms[room].hunter.socket_id] != null){
+                                io.sockets.connected[rooms[room].hunter.socket_id].leave(room);
+                            }
+                            
+                            console.log("timeout chicken");
+        
+                            for(let playerkey in rooms[room].player){
+                                if(io.sockets.connected[rooms[room].player[playerkey].socket_id] != null){
+                                    io.sockets.connected[rooms[room].player[playerkey].socket_id].leave(room);
+                                }
+                            }
+        
+        
+                            delete rooms[room];
+                        }, 5000);
                     } else {
-                        console.log("Room " + room + ": " + "Write to Database did not work!");
+                        console.error("error when getting ids from usernames");
                     }
                 });
 
-                let endGameObject = {
-                    hunter: saveHunter,
-                    chicken: saveChicken,
-                    general: saveGeneral
-                }
-
-                console.log("send end of game emit");
-                io.to(room).emit("endOfGame", endGameObject);
-                console.log("nach send end of game emit");
-                setTimeout(function(){
-                    console.log("timeout hunter");
-                    if(io.sockets.connected[rooms[room].hunter.socket_id] != null){
-                        io.sockets.connected[rooms[room].hunter.socket_id].leave(room);
-                    }
-                    
-                    console.log("timeout chicken");
-
-                    for(let playerkey in rooms[room].player){
-                        if(io.sockets.connected[rooms[room].player[playerkey].socket_id] != null){
-                            io.sockets.connected[rooms[room].player[playerkey].socket_id].leave(room);
-                        }
-                    }
 
 
-                    delete rooms[room];
-                }, 5000);
 
             }
         },30);

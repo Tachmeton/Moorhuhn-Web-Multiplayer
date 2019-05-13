@@ -122,9 +122,9 @@ function saveGame(hunter, chicken, general, done) {
             for(var i = 1; i < chicken.length; i++) {
                 part1 = part1 + ", chicken" + (i+1) + ", chicken_lifes" + (i+1);
             }
-            part1 = part1 + ") VALUES (" + res.rows[0][0] + ", " + "(SELECT id FROM player WHERE id='" + hunter.username + "')";
+            part1 = part1 + ") VALUES (" + res.rows[0][0] + ", " + "(SELECT id FROM player WHERE id='" + hunter.id + "')";
             for(var i = 0; i < chicken.length; i++) {
-                part1 = part1 + ", (SELECT id FROM player WHERE id='" + chicken[i].username + "'), " + chicken[i].lifesLeft;
+                part1 = part1 + ", (SELECT id FROM player WHERE id='" + chicken[i].id + "'), " + chicken[i].lifesLeft;
             }
             part1 = part1 + ");";
 
@@ -145,6 +145,30 @@ function saveGame(hunter, chicken, general, done) {
                     return;
                 }
             });
+        }
+    });
+}
+
+function getUsernames(arrayOfPlayerIds, done) {
+    let idString = JSON.stringify(arrayOfPlayerIds);
+    idString[0] = "(";
+    idString[-1] = ")";
+    const query = {
+        'text':'SELECT id,name from Player WHERE id=' + idString + ";",
+        'rowMode': 'array'
+    };
+    pool.query(query, (err, res) => {
+        if(err) {
+            done({success:false});
+        } else {
+            const idToPlayerMap = {};
+
+            for(index in res) {
+                idToPlayerMap[res[index][0]] = res[index][1];
+            }
+
+            console.log(idToPlayerMap);
+            done({success: true, map: idToPlayerMap});
         }
     });
 }
