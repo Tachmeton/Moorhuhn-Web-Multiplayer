@@ -491,6 +491,17 @@ io.on('connection', (client) => {
 
     });
 
+    client.on('hunterReload', () => {
+
+        let room = Object.keys(client.rooms).filter(item => item!=client.id);
+    
+            if(room != undefined && room != null){
+                if(client.id === rooms[room].hunter.socket_id){
+                    rooms[room].hunter.shots = BULLETS;
+                }
+            }
+    });
+
 });
 
 
