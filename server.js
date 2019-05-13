@@ -493,6 +493,7 @@ io.on('connection', (client) => {
 
     client.on('hunterReload', () => {
 
+        console.log("hunter wants to reload");
         let room = Object.keys(client.rooms).filter(item => item!=client.id);
     
             if(room != undefined && room != null){
