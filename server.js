@@ -22,7 +22,7 @@ const VIRTUAL_CHICKEN_HEIGHT = 0.14;
 
 const LIVE_OF_CHICKEN = 5;
 const BULLETS = 10;
-const TIME_ONE_GAME = 30;
+const TIME_ONE_GAME = 10;
 
 const MAX_PLAYER = 2;
 
