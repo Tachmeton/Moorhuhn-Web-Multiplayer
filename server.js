@@ -365,10 +365,8 @@ io.on('connection', (client) => {
                 }else{
                     io.to(rooms[lobby].id).emit("Hunter left Midgame");
                 }
-            }else if(rooms[lobby].joinedPlayer === 1){
-                //Nichts
             }else{
-                for(let playerkey of rooms[lobby].player){
+                for(let playerkey in rooms[lobby].player){
                     if(rooms[lobby].player[playerkey].id === playerId ){
                         client.leave(rooms[lobby].id);
                         delete player;          //could leave a null object in rooms.player???
@@ -568,15 +566,21 @@ function startGame(room){
                 io.to(room).emit("endOfGame", endGameObject);
 
                 setTimeout(function(){
-                    io.sockets.connected[rooms[room].hunter.socket_id].leave(room);
+
+                    if(io.sockets.connected[rooms[room].hunter.socket_id] != null){
+                        io.sockets.connected[rooms[room].hunter.socket_id].leave(room);
+                    }
+                    
 
                     for(let playerkey in rooms[room].player){
-                        io.sockets.connected[rooms[room].player[playerkey].socket_id].leave(room);
+                        if(io.sockets.connected[rooms[room].player[playerkey].socket_id] != null){
+                            io.sockets.connected[rooms[room].player[playerkey].socket_id].leave(room);
+                        }
                     }
 
 
                     delete rooms[room];
-                }, 2000);
+                }, 5000);
 
             }
         },30);
