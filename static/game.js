@@ -211,7 +211,7 @@ class Gameboard {
 
     gameLoop() {
         this.clearCanvas();
-        if(this.timeLeft === 0) {
+        if(this.timeLeft < 0) {
             this.drawText(END_SCREEN_MESSAGE);
             this.drawTimeLeft();
             clearInterval(this.gameInterval);
