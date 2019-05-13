@@ -225,6 +225,7 @@ app.post("/joinLobby", function(req,res) {
 
                         let chicken = {
                             id: playerId,
+                            socket_id: null,
                             joined: false,
                             x: Math.round(Math.random() * FeldLaengeX),
                             y: Math.round(Math.random() * FeldLaengeY),
@@ -291,6 +292,7 @@ io.on('connection', (client) => {
                                 console.log(playerId + " joined Lobby on 2nd join!");
                                 didjoin = true;
                                 joinedLobby = lobby;
+                                rooms[lobby].hunter.socket_id = client.id;
                                 rooms[lobby].hunter.joined = true;
                                 ++rooms[joinedLobby].joinedPlayer;
                             }else{
