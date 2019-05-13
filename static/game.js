@@ -142,12 +142,13 @@ class Gameboard {
             if(thisSave.myRole === 'h') {
                 $(thisSave.canvas).css("cursor", "default");
             }
+
+            const statHtml = thisSave.createStatisticsText(data);
+            $(thisSave.canvas).replace(statHtml);            
         });
 
         this.socket.on('disconnect', function() {
             console.log("socket connection was closed");
-
-//            thisSave.socket.close();
         });
 
 
@@ -511,5 +512,9 @@ class Gameboard {
 
     drawableY(virtualY){
         return virtualY * this.canvas.height/VIRTUAL_HEIGHT;
+    }
+
+    createStatisticsText(data) {
+        console.log(data);
     }
 }
