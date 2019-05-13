@@ -533,7 +533,7 @@ function startGame(room){
                 console.log("Room: " + room + " Game is over!");
 
                 const playerIds = [];
-                playerIds.push([rooms[room].hunter.id]);
+                playerIds.push(rooms[room].hunter.id);
                 for(playerkey in rooms[room].player){
                     playerIds.push(rooms[room].player[playerkey].id);
                 }

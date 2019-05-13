@@ -157,6 +157,7 @@ function getUsernames(arrayOfPlayerIds, done) {
         'text':'SELECT id,name from Player WHERE id=' + idString + ";",
         'rowMode': 'array'
     };
+    console.log(query);
     pool.query(query, (err, res) => {
         if(err) {
             done({success:false});
