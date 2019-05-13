@@ -551,13 +551,13 @@ function startGame(room){
                     duration: TIME_ONE_GAME
                 };
 
-                let writeToDatabase = saveGame(saveHunter, saveChicken, saveGeneral);
-
-                if(writeToDatabase === 0){
-                    console.log("Room " + room + ": " + "Write to Database worked!");
-                }else{
-                    console.log("Room " + room + ": " + "Write to Database did not work!");
-                }
+                let writeToDatabase = saveGame(saveHunter, saveChicken, saveGeneral, function(success) {
+                    if(success) {
+                        console.log("Room " + room + ": " + "Write to Database worked!");
+                    } else {
+                        console.log("Room " + room + ": " + "Write to Database did not work!");
+                    }
+                });
 
                 let endGameObject = {
                     hunter: saveHunter,

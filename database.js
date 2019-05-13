@@ -100,10 +100,10 @@ function login(login, password, done) {
 /*
     Fügt Spiel in Tabelle game und alle zugehörigen Spieler in Tabelle player_in_game
     Input: hunter, chicken[], general mit hunter.username, hunter.shots, hunter.hits, chicken[].username, chicken[].livesLeft, general.duration
-    Return: 0 - alles korrekt
-            1 - Fehler beim schreiben in die DB
+    Return: true  - alles korrekt
+            false - Fehler beim schreiben in die DB
 */
-function saveGame(hunter, chicken, general) {
+function saveGame(hunter, chicken, general, done) {
     const query1 = {
         text: "INSERT INTO game (shots, hits, duration) VALUES ('" + hunter.shots + "', '" + hunter.hits + "', " + general.duration + ") RETURNING id;",
         rowMode: "array"
@@ -135,10 +135,10 @@ function saveGame(hunter, chicken, general) {
             pool.query(query2, (err, res) => {
                 if(err) {
                     console.log(err.stack);
-                    return 1;
+                    done(false);
                 } else {
                     console.log("Successfully inserted everything");
-                    return 0;
+                    done(true);
                 }
             });
         }
