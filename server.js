@@ -268,8 +268,9 @@ app.post("/joinLobby", function(req,res) {
 io.on('connection', (client) => {
 
     console.log("New Connection: " + client.id);
-console.log(client.handshake.headers);
+
     let playerId;
+    let joinedLobby = null;
     try{
         const cookies = cookieToJson(client.handshake.headers.cookie);
         if(cookies.token !== null) {
@@ -289,19 +290,18 @@ console.log(client.handshake.headers);
                                 client.join(rooms[lobby].id);
                                 console.log(playerId + " joined Lobby on 2nd join!");
                                 didjoin = true;
+                                joinedLobby = lobby;
                                 rooms[lobby].hunter.joined = true;
+                                ++rooms[joinedLobby].joinedPlayer;
                             }else{
                                 for(let playerkey in rooms[lobby].player){
                                     if(rooms[lobby].player[playerkey].id === playerId && rooms[lobby].player[playerkey].joined === false){
                                         client.join(rooms[lobby].id);
                                         console.log(playerId + " joined Lobby on 2nd join!");
                                         didjoin = true;
+                                        joinedLobby = lobby;
                                         rooms[lobby].player[playerkey].socket_id = client.id;
                                         rooms[lobby].player[playerkey].joined = true;
-
-                                        if(rooms[lobby].joinedPlayer === MAX_PLAYER && allJoined(rooms[lobby]) === true){
-                                            startGame(rooms[lobby].id);
-                                        }
                                     }
                                 }
                             }
@@ -310,6 +310,14 @@ console.log(client.handshake.headers);
                             client.emit("Error", "Could not join Lobby");
                             console.log(playerId + " could not join Lobby on 2nd join!");
                             client.disconnect();
+                        }else{
+                            if(rooms[joinedLobby].joinedPlayer === MAX_PLAYER && allJoined(rooms[joinedLobby]) === true){
+                                startGame(joinedLobby);
+                            }else{
+                                console.log("Do not start Game");
+                                console.log(rooms[joinedLobby].joinedPlayer + " === " + MAX_PLAYER);
+                                console.log(allJoined(rooms[joinedLobby]));
+                            }
                         }
                     }
                 }
@@ -388,15 +396,15 @@ console.log(client.handshake.headers);
         let room = Object.keys(client.rooms).filter(item => item!=client.id);
         if(room != undefined && room != null){
             if(direction === 'n' || direction === 'e' || direction === 's' || direction === 'w'){
-                for(let i = 0; i < rooms[room].player.length; ++i){
-                    if(rooms[room].player[i].id === client.id){
-                        rooms[room].player[i].direction = direction;
+                for(let playerkey in  rooms[room].player){
+                    if(rooms[room].player[playerkey].id === client.id){
+                        rooms[room].player[playerkey].direction = direction;
 
                         io.to(room).emit("updateChick", {
-                            id: rooms[room].player[i].id,
-                            x: rooms[room].player[i].x,
-                            y: rooms[room].player[i].y,
-                            direction: rooms[room].player[i].direction
+                            id: rooms[room].player[playerkey].id,
+                            x: rooms[room].player[playerkey].x,
+                            y: rooms[room].player[playerkey].y,
+                            direction: rooms[room].player[playerkey].direction
                         });
                     }
                 }
@@ -421,9 +429,9 @@ console.log(client.handshake.headers);
 
                     --rooms[room].hunter.bullets;
 
-                    for(let i = 0; i < rooms[room].player.length; ++i){
+                    for(let playerkey in rooms[room].player){
 
-                        if(rooms[room].player[i].direction == 'w' || rooms[room].player[i].direction == 'e'){
+                        if(rooms[room].player[playerkey].direction == 'w' || rooms[room].player[playerkey].direction == 'e'){
                             chickenWidth = VIRTUAL_CHICKEN_WIDTH * FeldLaengeX;
                             chickenHeight = VIRTUAL_CHICKEN_HEIGHT * FeldLaengeY;
                         }else{
@@ -432,30 +440,30 @@ console.log(client.handshake.headers);
                             chickenHeight = VIRTUAL_CHICKEN_WIDTH * FeldLaengeX;
                         }
 
-                        console.log("Rechnung x: " + coordinates.x + " - " + rooms[room].player[i].x);
-                        console.log("Rechnung y: " + coordinates.y + " - " + rooms[room].player[i].y);
+                        console.log("Rechnung x: " + coordinates.x + " - " + rooms[room].player[playerkey].x);
+                        console.log("Rechnung y: " + coordinates.y + " - " + rooms[room].player[playerkey].y);
 
-                        let xDifference = coordinates.x - rooms[room].player[i].x;
-                        let yDifference = coordinates.y - rooms[room].player[i].y;
+                        let xDifference = coordinates.x - rooms[room].player[playerkey].x;
+                        let yDifference = coordinates.y - rooms[room].player[playerkey].y;
 
                         console.log("xDifference: " + xDifference);
                         console.log("yDifference: " + yDifference);
 
                         if(xDifference > 0 && xDifference < chickenWidth && yDifference > 0 && yDifference < chickenHeight){
-                            console.log("Hit on " + rooms[room].player[i].id);
-                            io.to(room).emit("killChick", rooms[room].player[i].id);
+                            console.log("Hit on " + rooms[room].player[playerkey].id);
+                            io.to(room).emit("killChick", rooms[room].player[playerkey].id);
                             ++rooms[room].hunter.kills;
-                            console.log(rooms[room].player[i].id  + " has been shot!");
+                            console.log(rooms[room].player[playerkey].id  + " has been shot!");
 
-                            rooms[room].player[i].x = Math.round(Math.random() * FeldLaengeX);
-                            rooms[room].player[i].y = Math.round(Math.random() * FeldLaengeY);
+                            rooms[room].player[playerkey].x = Math.round(Math.random() * FeldLaengeX);
+                            rooms[room].player[playerkey].y = Math.round(Math.random() * FeldLaengeY);
 
                             io.to(room).emit("reviveChick", {
-                                id: rooms[room].player[i].id,
-                                x: rooms[room].player[i].x,
-                                y: rooms[room].player[i].y,
-                                direction: rooms[room].player[i].direction,
-                                live: rooms[room].player[i].live
+                                id: rooms[room].player[playerkey].id,
+                                x: rooms[room].player[playerkey].x,
+                                y: rooms[room].player[playerkey].y,
+                                direction: rooms[room].player[playerkey].direction,
+                                live: rooms[room].player[playerkey].live
                             });
                         }else{
                             console.log("No hit!");
@@ -481,15 +489,15 @@ function startGame(room){
         bulletsLeft: rooms[room].hunter.bullets
     });
 
-    for(let i = 0; i < rooms[room].player.length; ++i){
+    for(let playerkey in rooms[room].player){
 
-        io.to(rooms[room].player[i].id).emit("assignRole", {
+        io.to(rooms[room].player[playerkey].id).emit("assignRole", {
             role: 'c',
-            chickenId: rooms[room].player[i].id
+            chickenId: rooms[room].player[playerkey].id
         });
     }
 
-        setTimeout(function(){
+    setTimeout(function(){
             io.to(room).emit("startingNow", {
             chicks: rooms[room].player,
             timeLeft: rooms[room].timeLeft
@@ -497,63 +505,63 @@ function startGame(room){
 
 
         rooms[room].updateChicksInterval = setInterval(function(){
-        if(rooms[room].timeLeft > 0){
-            updateChicks(room);
-        }else{
-            clearInterval(rooms[room].timeLeftInterval);
-            clearInterval(rooms[room].updateChicksInterval);
-            clearInterval(rooms[room].syncChicksInterval);
+            if(rooms[room].timeLeft > 0){
+                updateChicks(room);
+            }else{
+                clearInterval(rooms[room].timeLeftInterval);
+                clearInterval(rooms[room].updateChicksInterval);
+                clearInterval(rooms[room].syncChicksInterval);
 
-            console.log("Room: " + room + " Game is over!");
+                console.log("Room: " + room + " Game is over!");
 
-            console.log(io.sockets.connected);
+                //console.log(io.sockets.connected);
 
-            io.sockets.connected[rooms[room].hunter.id].leave(room);
+                io.sockets.connected[rooms[room].hunter.id].leave(room);
 
-            for(let i = 0; i < rooms[room].player.length; i++){
-                io.sockets.connected[rooms[room].player[i].id].leave(room);
+                for(let playerkey in rooms[room].player){
+                    io.sockets.connected[rooms[room].player[playerkey].id].leave(room);
+                }
+                //io.to(room).emit("Plsleave", room);
+
+                //console.log(io.sockets);
+
+                setTimeout(function(){
+                    delete rooms[room];
+                }, 2000);
+
             }
-            //io.to(room).emit("Plsleave", room);
-
-            console.log(io.sockets);
-
-            setTimeout(function(){
-                delete rooms[room];
-            }, 2000);
-
-        }
-    },30);
+        },30);
 
         rooms[room].syncChicksInterval = setInterval(function(){
             io.to(room).emit("syncChicks", (rooms[room].player));
         },500);
 
-    rooms[room].timeLeftInterval = setInterval(function(){
-            --rooms[room].timeLeft;
-    },1000);
+        rooms[room].timeLeftInterval = setInterval(function(){
+                --rooms[room].timeLeft;
+        },1000);
 
     }, 5000);
 }
 
 
 function updateChicks(room){
-    for(let i = 0; i < rooms[room].player.length; i++) {
-        switch(rooms[room].player[i].direction) {
+    for(let playerkey in rooms[room].player) {
+        switch(rooms[room].player[playerkey].direction) {
             case 'n':
-                rooms[room].player[i].y -= ySpeed;
-                rooms[room].player[i].y  = (rooms[room].player[i].y  < 0) ? 0: rooms[room].player[i].y;
+                rooms[room].player[playerkey].y -= ySpeed;
+                rooms[room].player[playerkey].y  = (rooms[room].player[playerkey].y  < 0) ? 0: rooms[room].player[playerkey].y;
                 break;
             case 'e':
-                rooms[room].player[i].x += xSpeed;
-                rooms[room].player[i].x = (rooms[room].player[i].x > FeldLaengeX) ?FeldLaengeX: rooms[room].player[i].x;
+                rooms[room].player[playerkey].x += xSpeed;
+                rooms[room].player[playerkey].x = (rooms[room].player[playerkey].x > FeldLaengeX) ?FeldLaengeX: rooms[room].player[playerkey].x;
             break;
             case 's':
-                rooms[room].player[i].y += ySpeed;
-                rooms[room].player[i].y = (rooms[room].player[i].y > FeldLaengeY) ? FeldLaengeY: rooms[room].player[i].y;
+                rooms[room].player[playerkey].y += ySpeed;
+                rooms[room].player[playerkey].y = (rooms[room].player[playerkey].y > FeldLaengeY) ? FeldLaengeY: rooms[room].player[playerkey].y;
                 break;
             case 'w':
-                rooms[room].player[i].x -= xSpeed;
-                rooms[room].player[i].x  = (rooms[room].player[i].x  < 0) ? 0: rooms[room].player[i].x;
+                rooms[room].player[playerkey].x -= xSpeed;
+                rooms[room].player[playerkey].x  = (rooms[room].player[playerkey].x  < 0) ? 0: rooms[room].player[playerkey].x;
                 break;
             default:
                 //ERROR
