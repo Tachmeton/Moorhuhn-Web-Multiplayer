@@ -112,7 +112,8 @@ function saveGame(hunter, chicken, general, done) {
     pool.query(query1, (err, res) => {
         if(err) {
             console.log(err.stack);
-            return 1;
+            done(0);
+            return;
         } else {
             console.log("Game wurde in die Datenbank geschrieben.");
 
@@ -136,9 +137,11 @@ function saveGame(hunter, chicken, general, done) {
                 if(err) {
                     console.log(err.stack);
                     done(false);
+                    return;
                 } else {
                     console.log("Successfully inserted everything");
                     done(true);
+                    return;
                 }
             });
         }

@@ -12,7 +12,6 @@ eval(fs.readFileSync('database.js')+'');
 
 Error.stackTraceLimit = Infinity;
 
-
 const xSpeed = 50;
 const ySpeed = 50;
 const FeldLaengeX = 15000;
@@ -339,7 +338,7 @@ io.on('connection', (client) => {
 
 
 
-    client.on('disconnect', () => {
+    /*client.on('disconnect', () => {
         for (let lobby in rooms){
             if(rooms[lobby].hunter.id === playerId){
                 client.leave(rooms[lobby].id);
@@ -375,7 +374,7 @@ io.on('connection', (client) => {
                 }
             }
         }
-    });
+    });*/
 
     client.on('leaveRoom', (room) => {
 
@@ -563,14 +562,16 @@ function startGame(room){
                     general: saveGeneral
                 }
 
+                console.log("send end of game emit");
                 io.to(room).emit("endOfGame", endGameObject);
-
+                console.log("nach send end of game emit");
                 setTimeout(function(){
-
+                    console.log("timeout hunter");
                     if(io.sockets.connected[rooms[room].hunter.socket_id] != null){
                         io.sockets.connected[rooms[room].hunter.socket_id].leave(room);
                     }
                     
+                    console.log("timeout chicken");
 
                     for(let playerkey in rooms[room].player){
                         if(io.sockets.connected[rooms[room].player[playerkey].socket_id] != null){

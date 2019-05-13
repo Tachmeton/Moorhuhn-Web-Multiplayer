@@ -137,12 +137,12 @@ class Gameboard {
             if(thisSave.myRole === 'h') {
                 $(thisSave.canvas).css("cursor", "default");
             }
-
-            thisSave.socket.close();
         });
 
         this.socket.on('disconnect', function() {
             console.log("socket connection was closed");
+
+//            thisSave.socket.close();
         });
 
 
