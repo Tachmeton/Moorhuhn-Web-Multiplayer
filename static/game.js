@@ -521,7 +521,7 @@ class Gameboard {
         stats.innerHTML += "Hunter: " + data.hunter.username + " <br>Shots: " + data.hunter.shots + "<br>Hit Ratio: " + data.hunter.hits/data.hunter.shots + "<br>";
 
         for(let chicken in data.chicken) {
-            stats.innerHTML += "<br>Chicken " + chicken + ": " + data.chicken[chicken].username + "<br>Lifes left: " + data.chicken[chicken].livesLeft;
+            stats.innerHTML += "<br>Chicken " + chicken + ": " + data.chicken[chicken].username + "<br>Lifes left: " + data.chicken[chicken].lifesLeft;
         }
     }
 }

@@ -430,6 +430,7 @@ io.on('connection', (client) => {
                 if(rooms[room].hunter.bullets > 0){
 
                     --rooms[room].hunter.bullets;
+                    ++rooms[room].hunter.shots;
 
                     for(let playerkey in rooms[room].player){
 
