@@ -124,7 +124,7 @@ app.post("/registerUser", function(req,res) {
 });
 
 app.post("/createLobby", function(req,res) {
-    jwt.verify(cookies.token, config.secret, function(err, decoded) {
+    jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
         if(err) {
             // fehler: ungültiger token/cookie
             console.log("Fehler beim createn der Lobby");
@@ -133,10 +133,10 @@ app.post("/createLobby", function(req,res) {
             playerId = decoded.player_id;
             console.log("player: " + playerId + " will eine Lobby createn");
 
-            roomnumber = createRoomnumber();
+            roomnumber = createRoomNumber();
 
             let hunter = {
-                id: player_id,
+                id: playerId,
                 socket_id: null,
                 joined: false,
                 kills: 0,
@@ -220,7 +220,7 @@ app.post("/joinLobby", function(req,res) {
     console.log("player wants to join lobby");
     const lobbyId = req.query.lobbyId;
     if(lobbyId !== null) {
-        jwt.verify(cookies.token, config.secret, function(err, decoded) {
+        jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
             if(err) {
                 // fehler: ungültiger token/cookie
                 console.log("");
@@ -592,13 +592,11 @@ function createRoomNumber() {
     while(!uniqueroomnumber){
         roomnumber = Math.round(Math.random() * 10000);
 
-        for(let i = 0; i < rooms.length; ++i){
-            if(rooms[roomnumber] != undefined){
-                return createRoomNumber();
-            }
+        if(rooms[roomnumber] == undefined){
+            uniqueroomnumber = true;
         }
-        return roomnumber;
     }
+    return roomnumber;
 }
 
 
