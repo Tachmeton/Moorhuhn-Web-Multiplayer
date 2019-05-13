@@ -442,7 +442,7 @@ class Gameboard {
             xOffsetLeft = this.ctx.measureText(HEART_SYMBOL.repeat(livesLeft)).width;
         }
 
-        let livesLost;
+        let xOffsetLost;
         if(livesLost === 0) {
             xOffsetLost = 0;
         } else {
