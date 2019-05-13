@@ -451,7 +451,7 @@ io.on('connection', (client) => {
                         console.log("xDifference: " + xDifference);
                         console.log("yDifference: " + yDifference);
 
-                        if(xDifference > 0 && xDifference < chickenWidth && yDifference > 0 && yDifference < chickenHeight){
+                        if(xDifference > 0 && xDifference < chickenWidth && yDifference > 0 && yDifference < chickenHeight && rooms[room].player[playerkey].alive){
                             console.log("Hit on " + rooms[room].player[playerkey].id);
                             io.to(room).emit("killChick", rooms[room].player[playerkey].id);
                             --rooms[room].player[playerkey].lives;

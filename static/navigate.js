@@ -155,6 +155,7 @@ $('body').on('click', '#v-pills-home-tab', function() {
  * Adds Lobbies to HTML
  */
 function showLobbies() {
+    $('#lobby-holder').empty();
     loadLobbies(function(data,textStatus,jqXhr){
         if(jqXhr.status === 200) {
             $('#lobby-holder').not(':first').empty();
