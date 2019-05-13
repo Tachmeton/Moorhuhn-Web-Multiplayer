@@ -161,14 +161,17 @@ function getUsernames(arrayOfPlayerIds, done) {
         if(err) {
             done({success:false});
         } else {
-            const idToPlayerMap = {};
+            if(res.rowCount >= 1) {
+                const idToPlayerMap = {};
 
-            for(index in res) {
-                idToPlayerMap[res[index][0]] = res[index][1];
+                for(index in res.rows) {
+                    idToPlayerMap[res.rows[index][0]] = res.rows[index][1];
+                }
+    
+                console.log(idToPlayerMap);
+                done({success: true, map: idToPlayerMap});
             }
 
-            console.log(idToPlayerMap);
-            done({success: true, map: idToPlayerMap});
         }
     });
 }
