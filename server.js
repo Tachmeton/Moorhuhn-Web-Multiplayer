@@ -227,8 +227,8 @@ app.post("/joinLobby", function(req,res) {
                             id: playerId,
                             socket_id: null,
                             joined: false,
-                            x: Math.round(Math.random() * FeldLaengeX),
-                            y: Math.round(Math.random() * FeldLaengeY),
+                            x: calculateNewXCoordinate(),
+                            y: calculateNewYCoordinate(),
                             direction: "w",
                             lives: LIVE_OF_CHICKEN,
                             alive: true
@@ -461,16 +461,27 @@ io.on('connection', (client) => {
                             ++rooms[room].hunter.kills;
                             console.log(rooms[room].player[playerkey].id  + " has been shot!");
 
-                            rooms[room].player[playerkey].x = Math.round(Math.random() * FeldLaengeX);
-                            rooms[room].player[playerkey].y = Math.round(Math.random() * FeldLaengeY);
+                            rooms[room].player[playerkey].alive = false;
 
-                            io.to(room).emit("reviveChick", {
-                                id: rooms[room].player[playerkey].id,
-                                x: rooms[room].player[playerkey].x,
-                                y: rooms[room].player[playerkey].y,
-                                direction: rooms[room].player[playerkey].direction,
-                                live: rooms[room].player[playerkey].live
-                            });
+                            if(rooms[room].player[playerkey].lives > 0){
+                                setTimeout(function(){
+                                    
+                                    rooms[room].player[playerkey].x = calculateNewXCoordinate();
+                                    rooms[room].player[playerkey].y = calculateNewYCoordinate();
+                                    rooms[room].player[playerkey].alive = true;
+
+                                    io.to(room).emit("reviveChick", {
+                                        id: rooms[room].player[playerkey].id,
+                                        x: rooms[room].player[playerkey].x,
+                                        y: rooms[room].player[playerkey].y,
+                                        direction: rooms[room].player[playerkey].direction,
+                                        live: rooms[room].player[playerkey].lives
+                                    });
+                                }, 2000);
+                            }else{
+                                console.log("Room " + room + ": " + "Chicken " + rooms[room].player[playerkey].id + " died and has no lives anymore!");
+                                
+                            }
                         }else{
                             console.log("No hit!");
                         }
@@ -551,28 +562,29 @@ function startGame(room){
 
 function updateChicks(room){
     for(let playerkey in rooms[room].player) {
-        switch(rooms[room].player[playerkey].direction) {
-            case 'n':
-                rooms[room].player[playerkey].y -= ySpeed;
-                rooms[room].player[playerkey].y  = (rooms[room].player[playerkey].y  < 0) ? 0: rooms[room].player[playerkey].y;
+        if(rooms[room].player[playerkey].alive){
+            switch(rooms[room].player[playerkey].direction) {
+                case 'n':
+                    rooms[room].player[playerkey].y -= ySpeed;
+                    rooms[room].player[playerkey].y  = (rooms[room].player[playerkey].y  < 0) ? 0: rooms[room].player[playerkey].y;
+                    break;
+                case 'e':
+                    rooms[room].player[playerkey].x += xSpeed;
+                    rooms[room].player[playerkey].x = (rooms[room].player[playerkey].x >= FeldLaengeX * (1-VIRTUAL_CHICKEN_WIDTH)) ?FeldLaengeX * (1-VIRTUAL_CHICKEN_WIDTH): rooms[room].player[playerkey].x;
                 break;
-            case 'e':
-                rooms[room].player[playerkey].x += xSpeed;
-                rooms[room].player[playerkey].x = (rooms[room].player[playerkey].x >= FeldLaengeX * (1-VIRTUAL_CHICKEN_WIDTH)) ?FeldLaengeX * (1-VIRTUAL_CHICKEN_WIDTH): rooms[room].player[playerkey].x;
-            break;
-            case 's':
-                rooms[room].player[playerkey].y += ySpeed;
-                rooms[room].player[playerkey].y = (rooms[room].player[playerkey].y >= FeldLaengeY * (1-VIRTUAL_CHICKEN_HEIGHT)) ? FeldLaengeY * (1-VIRTUAL_CHICKEN_HEIGHT): rooms[room].player[playerkey].y;
+                case 's':
+                    rooms[room].player[playerkey].y += ySpeed;
+                    rooms[room].player[playerkey].y = (rooms[room].player[playerkey].y >= FeldLaengeY * (1-VIRTUAL_CHICKEN_HEIGHT)) ? FeldLaengeY * (1-VIRTUAL_CHICKEN_HEIGHT): rooms[room].player[playerkey].y;
+                    break;
+                case 'w':
+                    rooms[room].player[playerkey].x -= xSpeed;
+                    rooms[room].player[playerkey].x  = (rooms[room].player[playerkey].x  < 0) ? 0: rooms[room].player[playerkey].x;
+                    break;
+                default:
+                    //ERROR
                 break;
-            case 'w':
-                rooms[room].player[playerkey].x -= xSpeed;
-                rooms[room].player[playerkey].x  = (rooms[room].player[playerkey].x  < 0) ? 0: rooms[room].player[playerkey].x;
-                break;
-            default:
-                //ERROR
-            break;
+            }
         }
-        //console.log(rooms[room].player[i].x + ", " + rooms[room].player[i].y);
     }
 }
 
@@ -628,6 +640,18 @@ function allJoined(lobby){
     }
     return allJoined;
 }
+
+
+function calculateNewXCoordinate(){
+    return Math.round(Math.random() * FeldLaengeX * (1-VIRTUAL_CHICKEN_WIDTH));
+}
+
+
+function calculateNewYCoordinate(){
+    return Math.round(Math.random() * FeldLaengeY * (1-VIRTUAL_CHICKEN_HEIGHT));
+}
+
+
 
 
 
