@@ -122,9 +122,9 @@ function saveGame(hunter, chicken, general, done) {
             for(var i = 1; i < chicken.length; i++) {
                 part1 = part1 + ", chicken" + (i+1) + ", chicken_lifes" + (i+1);
             }
-            part1 = part1 + ") VALUES (" + res.rows[0][0] + ", " + "(SELECT id FROM player WHERE name='" + hunter.username + "')";
+            part1 = part1 + ") VALUES (" + res.rows[0][0] + ", " + "(SELECT id FROM player WHERE id='" + hunter.username + "')";
             for(var i = 0; i < chicken.length; i++) {
-                part1 = part1 + ", (SELECT id FROM player WHERE name='" + chicken[i].username + "'), " + chicken[i].lifesLeft;
+                part1 = part1 + ", (SELECT id FROM player WHERE id='" + chicken[i].username + "'), " + chicken[i].lifesLeft;
             }
             part1 = part1 + ");";
 
