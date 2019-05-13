@@ -80,6 +80,10 @@ class Gameboard {
             thisSave.sendChickControl(e);
         };
 
+        document.oncontextmenu = function(e) {
+            thisSave.reload(thisSave);
+        }
+
 
         // create socket connection and event actions
         this.socket = io.connect('https://chlorhuhn.rocks', {secure:true});
@@ -128,6 +132,7 @@ class Gameboard {
             thisSave.animatedShot.x = data.x;
             thisSave.animatedShot.y = data.y;
         });
+
 
         this.socket.on('endOfGame', function(data) {
             console.log("socket.io: sent endOfGame");
@@ -284,10 +289,21 @@ class Gameboard {
         console.log("canvasX: %s;canvasY:%s", canvasPosX, canvasPosY);
         console.log("actual game: x-" + virtualX + ";y-" + virtualY);
 
+        --thisSave.bulletsLeft;
+
         thisSave.socket.emit('hunterShot', {
             x: virtualX,
             y: virtualY
         });
+    }
+
+    reload(thisSave) {
+        if(thisSave.myRole === 'h') {
+            thisSave.socket.emit('hunterReload');
+            setTimeout(function() {
+                thisSave.bulletsLeft = MAX_BULLETS;
+            },300);
+        }
     }
 
     updateDirections() {
