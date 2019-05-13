@@ -396,10 +396,11 @@ io.on('connection', (client) => {
         console.log("update chicken Direction: " + direction);
 
         let room = Object.keys(client.rooms).filter(item => item!=client.id);
-        if(room != undefined && room != null){
+        console.log("room: " +  room);
+        if(room != undefined && room != null && rooms[room] !== null){
             if(direction === 'n' || direction === 'e' || direction === 's' || direction === 'w'){
                 for(let playerkey in  rooms[room].player){
-                    if(rooms[room].player[playerkey].id === client.id){
+                    if(rooms[room].player[playerkey].socket_id === client.id){
                         rooms[room].player[playerkey].direction = direction;
 
                         io.to(room).emit("updateChick", {
@@ -413,6 +414,8 @@ io.on('connection', (client) => {
             }else{
                 console.log("Client: " + client.id + "mit falscher Direction: " + direction);
             }
+        }else{
+            console.log("@chickInput: room is not defined/there is no room");
         }
     });
 
