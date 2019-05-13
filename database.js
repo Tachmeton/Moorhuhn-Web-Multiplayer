@@ -150,11 +150,10 @@ function saveGame(hunter, chicken, general, done) {
 }
 
 function getUsernames(arrayOfPlayerIds, done) {
-    let idString = JSON.stringify(arrayOfPlayerIds);
-    idString[0] = "(";
-    idString[-1] = ")";
+    const idString = JSON.stringify(arrayOfPlayerIds)
+    const sqlIdList = "(" + idString.substring(1, idString.length-1) + ")";
     const query = {
-        'text':'SELECT id,name from Player WHERE id=' + idString + ";",
+        'text':'SELECT id,name from Player WHERE id=' + sqlIdList + ";",
         'rowMode': 'array'
     };
     console.log(query);
