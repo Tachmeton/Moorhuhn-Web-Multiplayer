@@ -515,12 +515,12 @@ class Gameboard {
 
     createStatisticsText(data) {
         const mainContent = document.getElementById("main-content");
-        mainContent.innerHTML = '<div id="stats" class="p-2 text-white bg-green"></div>';
+        mainContent.innerHTML = '<div id="stats" class="p-2 text-white bg-primary"></div>';
 
         const statisticsDiv = document.getElementById("stats");
         stats.innerHTML += "Hunter: " + data.hunter.username + " <br>Shots: " + data.hunter.shots + "<br>Hit Ratio: " + data.hunter.hits/data.hunter.shots + "<br>";
 
-        for(chicken in data.chicken) {
+        for(let chicken in data.chicken) {
             stats.innerHTML += "<br>Chicken " + chicken + ": " + data.chicken[chicken].username + "<br>Lifes left: " + data.chicken[chicken].livesLeft;
         }
     }
