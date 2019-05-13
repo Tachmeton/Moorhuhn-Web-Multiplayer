@@ -210,7 +210,7 @@ app.get("/getLobbies", function(req,res) {
 
 app.post("/joinLobby", function(req,res) {
     const lobbyId = req.body.lobbyId;
-    if(lobbyId !== null && lobbyId != undefined) {
+    if(lobbyId !== null && lobbyId !== undefined) {
         jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
             if(err) {
                 // fehler: ungültiger token/cookie
@@ -237,7 +237,7 @@ app.post("/joinLobby", function(req,res) {
         
                         rooms[lobbyId].player[place] = chicken;
 
-                        console.log("player: " + playerId + " first lobby join");
+                        console.log("player: " + playerId + " first lobby join worked");
                         
                         //if player does not join -->kick it from lobby
                         setTimeout(function(){
@@ -290,8 +290,6 @@ io.on('connection', (client) => {
                                 console.log(playerId + " joined Lobby on 2nd join!");
                                 didjoin = true;
                                 rooms[lobby].hunter.joined = true;
-                            }else if(rooms[lobby].joinedPlayer === 1){
-                                //Nichts
                             }else{
                                 for(let playerkey in rooms[lobby].player){
                                     if(rooms[lobby].player[playerkey].id === playerId && rooms[lobby].player[playerkey].joined === false){
@@ -310,7 +308,7 @@ io.on('connection', (client) => {
                         }
                         if(!didjoin){
                             client.emit("Error", "Could not join Lobby");
-                            console.log(playerId + "could not join Lobby on 2nd join!");
+                            console.log(playerId + " could not join Lobby on 2nd join!");
                             client.disconnect();
                         }
                     }
