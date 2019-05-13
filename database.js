@@ -153,7 +153,7 @@ function getUsernames(arrayOfPlayerIds, done) {
     const idString = JSON.stringify(arrayOfPlayerIds)
     const sqlIdList = "(" + idString.substring(1, idString.length-1) + ")";
     const query = {
-        'text':'SELECT id,name from Player WHERE id=' + sqlIdList + ";",
+        'text':'SELECT id,name from Player WHERE id in ' + sqlIdList + ";",
         'rowMode': 'array'
     };
     console.log(query);
