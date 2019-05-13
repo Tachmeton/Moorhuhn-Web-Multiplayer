@@ -51,8 +51,8 @@ bullet.src = "img/bullet.png";
 crosshair.src = "img/crosshair.png";
 
 class Gameboard {
-    constructor(lobbyId) {
-        this.lobbyId = lobbyId;
+    constructor(/*lobbyId*/) {
+        //this.lobbyId = lobbyId;
 
         this.canvas = document.getElementById("game");
         this.ctx = this.canvas.getContext("2d");

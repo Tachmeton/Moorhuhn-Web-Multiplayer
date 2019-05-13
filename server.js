@@ -161,7 +161,7 @@ app.post("/createLobby", function(req,res) {
 
             console.log("player: " + playerId + "has created a lobby");
 
-            res.send(roomnumber);
+            res.status(200);
         }
     });
 });

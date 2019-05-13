@@ -219,7 +219,7 @@ $('body').on('click', '#create-lobby', function() {
                 loadGame(function(gamehtml,textStatus,jqXhr) {
                     if(jqXhr.status === 200) {
                         $('#mainContainer').replaceWith(gamehtml);
-                        activeGame = new Gameboard(lobbyId);
+                        activeGame = new Gameboard();
                     } else {
                         alert("/game.html konnte nicht geladen werden");
                     }
@@ -256,7 +256,7 @@ function joinLobby(el) {
                 loadGame(function(data,textStatus,jqXhr) {
                     if(jqXhr.status === 200) {
                         $('#mainContainer').replaceWith(data);
-                        activeGame = new Gameboard(lobbyId);
+                        activeGame = new Gameboard();
                     } else {
                         alert("/game.html konnte nicht geladen werden");
                     }
