@@ -457,6 +457,7 @@ io.on('connection', (client) => {
                         if(xDifference > 0 && xDifference < chickenWidth && yDifference > 0 && yDifference < chickenHeight){
                             console.log("Hit on " + rooms[room].player[playerkey].id);
                             io.to(room).emit("killChick", rooms[room].player[playerkey].id);
+                            --rooms[room].player[playerkey].lives;
                             ++rooms[room].hunter.kills;
                             console.log(rooms[room].player[playerkey].id  + " has been shot!");
 
@@ -520,10 +521,10 @@ function startGame(room){
 
                 //console.log(io.sockets.connected);
 
-                io.sockets.connected[rooms[room].hunter.id].leave(room);
+                io.sockets.connected[rooms[room].hunter.socket_id].leave(room);
 
                 for(let playerkey in rooms[room].player){
-                    io.sockets.connected[rooms[room].player[playerkey].id].leave(room);
+                    io.sockets.connected[rooms[room].player[playerkey].socket_id].leave(room);
                 }
                 //io.to(room).emit("Plsleave", room);
 
