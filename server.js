@@ -530,6 +530,43 @@ function startGame(room){
 
                 console.log("Room: " + room + " Game is over!");
 
+                let saveHunter = {
+                    username: rooms[room].hunter.id,
+                    hits: rooms[rooms].hunter.hits,
+                    shots: rooms[room].hunter.shots
+                };
+
+                let saveChicken = [];
+
+                for(playerkey in rooms[room].player){
+                    let chicken = {
+                        username: rooms[room].player[playerkey].id,
+                        livesLeft: rooms[room].player[playerkey].lives
+                    };
+
+                    saveChicken.push(chicken);
+                }
+
+                saveGeneral = {
+                    duration: TIME_ONE_GAME
+                };
+
+                let writeToDatabase = saveGame(saveHunter, saveChicken, general);
+
+                if(writeToDatabase === 0){
+                    console.log("Room " + room + ": " + "Write to Database worked!");
+                }else{
+                    console.log("Room " + room + ": " + "Write to Database did not work!");
+                }
+
+                let endGameObject = {
+                    hunter: saveHunter,
+                    chicken: saveChicken,
+                    general: saveGeneral
+                }
+
+                io.to(room).emit("EndofGame", endGameObject );
+
                 //console.log(io.sockets.connected);
 
                 io.sockets.connected[rooms[room].hunter.socket_id].leave(room);
