@@ -24,7 +24,7 @@ const LIVE_OF_CHICKEN = 5;
 const BULLETS = 10;
 const TIME_ONE_GAME = 30;
 
-const MAX_PLAYER = 4;
+const MAX_PLAYER = 2;
 
 server.listen(3000, function() {
 console.log("server now listening on port 3000");
@@ -442,18 +442,10 @@ io.on('connection', (client) => {
                             chickenHeight = VIRTUAL_CHICKEN_WIDTH * FeldLaengeX;
                         }
 
-                        console.log("Rechnung x: " + coordinates.x + " - " + rooms[room].player[playerkey].x);
-                        console.log("Rechnung y: " + coordinates.y + " - " + rooms[room].player[playerkey].y);
-
                         let xDifference = coordinates.x - rooms[room].player[playerkey].x;
                         let yDifference = coordinates.y - rooms[room].player[playerkey].y;
 
-                        console.log("xDifference: " + xDifference);
-                        console.log("yDifference: " + yDifference);
-
-                        console.log("chicken is alive: " + rooms[room].player[playerkey].alive);
                         if(xDifference > 0 && xDifference < chickenWidth && yDifference > 0 && yDifference < chickenHeight && rooms[room].player[playerkey].alive){
-                            console.log("Hit on " + rooms[room].player[playerkey].id);
                             io.to(room).emit("killChick", rooms[room].player[playerkey].id);
                             --rooms[room].player[playerkey].lives;
                             ++rooms[room].hunter.kills;

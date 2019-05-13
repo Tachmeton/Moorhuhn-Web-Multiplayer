@@ -16,7 +16,7 @@ body{
     background-image: url(img/blur_background.png);
     background-size: cover;
     background-repeat: no-repeat;
-
+    background-attachment: fixed;
 }
 
 .login-card{
