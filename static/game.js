@@ -80,54 +80,54 @@ class Gameboard {
 
 
         // create socket connection and event actions
-        const socket = io.connect('http://localhost:3000');
+        this.socket = io.connect('http://localhost:3000');
 
-        socket.on('connect', function() {
+        this.socket.on('connect', function() {
             console.log("socket connection established");
         });
 
-        socket.on('connect_error', function(message) {
+        this.socket.on('connect_error', function(message) {
             console.log("error @ establishing socket connection: " + message);
         });
 
-        socket.on('startingSoon', function(countDownTime) {
+        this.socket.on('startingSoon', function(countDownTime) {
             console.log("socket.io: sent starting soon");
             thisSave.startCountdown(countDownTime);
         });
 
-        socket.on('assignRole', function(data) {
+        this.socket.on('assignRole', function(data) {
             console.log("socket.io: sent assignRole");
             thisSave.assignRole(data);
         });
 
-        socket.on('startingNow', function(data) {
+        this.socket.on('startingNow', function(data) {
             console.log("socket.io: sent startingNow");
             thisSave.startGame(data);
         });
 
-        socket.on('syncChicks', function(syncedChicks) {
+        this.socket.on('syncChicks', function(syncedChicks) {
             console.log("socket.io: sent syncChicks");
             thisSave.syncChicks(syncedChicks);
         });
 
-        socket.on('updateChick', function(chick) {
+        this.socket.on('updateChick', function(chick) {
             console.log("socket.io: sent updateChick");
             thisSave.updateChick(chick);
         });
 
-        socket.on('killChick', function(id) {
+        this.socket.on('killChick', function(id) {
             console.log("socket.io: sent killChick");
             thisSave.killChick(id);
         });
 
-        socket.on('crosshairPosition', function(data) {
+        this.socket.on('crosshairPosition', function(data) {
             console.log("socket.io: sent crosshairPosition");
             thisSave.animatedShot.progress = REFRESH_RATE;
             thisSave.animatedShot.x = data.x;
             thisSave.animatedShot.y = data.y;
         });
 
-        socket.on('disconnect', function() {
+        this.socket.on('disconnect', function() {
             console.log("socket connection was closed");
         });
 
@@ -165,8 +165,8 @@ class Gameboard {
     }
 
     assignRole(roleData) {
-        this.role = roleData.role;
-        if(this.role === 'c') {
+        this.myRole = roleData.role;
+        if(this.myRole === 'c') {
             this.myChickenId = roleData.chickenId;
         } else {
             this.bulletsLeft = roleData.bulletsLeft;
@@ -235,12 +235,18 @@ class Gameboard {
         }
 
         // only emit to server if direction changed // change how to find mychicken!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if(this.chicks[this.myChickenId].direction != direction) {
-            socket.emit('chickInput', direction);
+        let myChickIndex;
+        for(let i = 0; i< this.chicks.length; i++) {
+            if(this.chicks[i].id === this.myChickenId) {
+                myChickIndex = i;
+            }
+        }
+        if(this.chicks[myChickIndex].direction != direction) {
+            this.socket.emit('chickInput', direction);
         }
 
         if(TEST_MODE) {
-            chicks[this.myChickenId].direction = direction;
+            chicks[myChickIndex].direction = direction;
         }
     }
 
@@ -260,7 +266,7 @@ class Gameboard {
         console.log("canvasX: %s;canvasY:%s", canvasPosX, canvasPosY);
         console.log("actual game: x-" + virtualX + ";y-" + virtualY);
 
-        socket.emit('hunterShot', {
+        this.socket.emit('hunterShot', {
             x: virtualX,
             y: virtualY
         });
@@ -350,31 +356,39 @@ class Gameboard {
     }
 
     drawChicks() {
+        let myChickIndex;
+        for(let i = 0; i< this.chicks.length; i++) {
+            if(this.chicks[i].id === this.myChickenId) {
+                myChickIndex = i;
+            }
+        }
+
         for(let i = 0; i < this.chicks.length; i++) {
+
             if(this.chicks[i].alive === false) {
                 continue;
             }
 
             if(this.chicks[i].direction === 'e') {
-                if(i === this.myChickenId) {
+                if(i === myChickIndex) {
                     this.ctx.drawImage(picRightMe, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_WIDTH * this.canvas.width, VIRTUAL_CHICKEN_HEIGHT * this.canvas.height);
                 } else {
                     this.ctx.drawImage(picRight, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_WIDTH * this.canvas.width, VIRTUAL_CHICKEN_HEIGHT * this.canvas.height);
                 }
             } else if(this.chicks[i].direction === 'w'){
-                if(i === this.myChickenId) {
+                if(i === myChickIndex) {
                     this.ctx.drawImage(picLeftMe, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_WIDTH * this.canvas.width, VIRTUAL_CHICKEN_HEIGHT * this.canvas.height);
                 } else {
                     this.ctx.drawImage(picLeft, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_WIDTH * this.canvas.width, VIRTUAL_CHICKEN_HEIGHT * this.canvas.height);
                 }
             }else if(this.chicks[i].direction === 'n'){
-                if(i === this.myChickenId) {
+                if(i === myChickIndex) {
                     this.ctx.drawImage(picUpMe, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_HEIGHT * this.canvas.height, VIRTUAL_CHICKEN_WIDTH * this.canvas.width);
                 } else {
                     this.ctx.drawImage(picUp, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_HEIGHT * this.canvas.height, VIRTUAL_CHICKEN_WIDTH * this.canvas.width);
                 }
             }else{
-                if(i === this.myChickenId) {
+                if(i === myChickIndex) {
                     this.ctx.drawImage(picDownMe, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y),  VIRTUAL_CHICKEN_HEIGHT * this.canvas.height, VIRTUAL_CHICKEN_WIDTH * this.canvas.width);
                 } else {
                     this.ctx.drawImage(picDown, this.drawableX(this.chicks[i].x), this.drawableY(this.chicks[i].y), VIRTUAL_CHICKEN_HEIGHT * this.canvas.height, VIRTUAL_CHICKEN_WIDTH * this.canvas.width);

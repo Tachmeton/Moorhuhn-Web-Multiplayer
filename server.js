@@ -393,7 +393,7 @@ io.on('connection', (client) => {
     });
 
     client.on('chickInput', (direction) => {
-        //console.log("Direction: " + direction);
+        console.log("update chicken Direction: " + direction);
 
         let room = Object.keys(client.rooms).filter(item => item!=client.id);
         if(room != undefined && room != null){
