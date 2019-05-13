@@ -23,7 +23,7 @@ const VIRTUAL_CHICKEN_HEIGHT = 0.14;
 
 const LIVE_OF_CHICKEN = 5;
 const BULLETS = 10;
-const TIME_ONE_GAME = 10;
+const TIME_ONE_GAME = 100;
 
 const MAX_PLAYER = 2;
 
@@ -484,14 +484,13 @@ function startGame(room){
     console.log("Room " + room + ": Starting soon!");
     io.to(room).emit("startingSoon", (5));
 
-    io.to(rooms[room].hunter.id).emit("assignRole", {
+    io.to(rooms[room].hunter.socket_id).emit("assignRole", {
         role: 'h',
         bulletsLeft: rooms[room].hunter.bullets
     });
 
     for(let playerkey in rooms[room].player){
-
-        io.to(rooms[room].player[playerkey].id).emit("assignRole", {
+        io.to(rooms[room].player[playerkey].socket_id).emit("assignRole", {
             role: 'c',
             chickenId: rooms[room].player[playerkey].id
         });

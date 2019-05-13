@@ -52,6 +52,7 @@ crosshair.src = "img/crosshair.png";
 
 class Gameboard {
     constructor(/*lobbyId*/) {
+        const thisSave = this;
         //this.lobbyId = lobbyId;
 
         this.canvas = document.getElementById("game");
@@ -70,11 +71,11 @@ class Gameboard {
         }
 
         // register mouse click
-        document.getElementById("game").onclick = this.sendHunterShot;
+        document.getElementById("game").onclick = thisSave.sendHunterShot;
 
         // register keypresses
         document.onkeydown = function(e){
-            this.sendChickControl(e);
+            thisSave.sendChickControl(e);
         };
 
 
@@ -90,29 +91,40 @@ class Gameboard {
         });
 
         socket.on('startingSoon', function(countDownTime) {
-            this.startCountdown(countDownTime);
+            console.log("socket.io: sent starting soon");
+            thisSave.startCountdown(countDownTime);
+        });
+
+        socket.on('assignRole', function(data) {
+            console.log("socket.io: sent assignRole");
+            thisSave.assignRole(data);
         });
 
         socket.on('startingNow', function(data) {
-            this.startGame(data);
+            console.log("socket.io: sent startingNow");
+            thisSave.startGame(data);
         });
 
         socket.on('syncChicks', function(syncedChicks) {
-            this.syncChicks(syncedChicks);
+            console.log("socket.io: sent syncChicks");
+            thisSave.syncChicks(syncedChicks);
         });
 
         socket.on('updateChick', function(chick) {
-            this.updateChick(chick);
+            console.log("socket.io: sent updateChick");
+            thisSave.updateChick(chick);
         });
 
         socket.on('killChick', function(id) {
-            this.killChick(id);
+            console.log("socket.io: sent killChick");
+            thisSave.killChick(id);
         });
 
         socket.on('crosshairPosition', function(data) {
-            this.animatedShot.progress = REFRESH_RATE;
-            this.animatedShot.x = data.x;
-            this.animatedShot.y = data.y;
+            console.log("socket.io: sent crosshairPosition");
+            thisSave.animatedShot.progress = REFRESH_RATE;
+            thisSave.animatedShot.x = data.x;
+            thisSave.animatedShot.y = data.y;
         });
 
         socket.on('disconnect', function() {
