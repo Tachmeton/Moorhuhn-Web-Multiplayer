@@ -296,3 +296,10 @@ function loadGame(done) {
         }
     });
 }
+
+$('body').on('click', '#backToLobby', function() {
+    loadMain(function(data) {
+        $('#mainContainer').replaceWith(data);
+        showLobbies();
+    });
+});

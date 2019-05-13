@@ -523,5 +523,7 @@ class Gameboard {
         for(let chicken in data.chicken) {
             stats.innerHTML += "<tr><td>Chicken " + chicken + ": </td><td>" + data.chicken[chicken].username + "</td></tr><tr><td>Lifes left: </td><td>" + data.chicken[chicken].lifesLeft + "</td></tr>";
         }
+
+        stats.innerHTML += '<br><button class="btn-sm bg-secondary text-white" id="backToLobby">zurück zur lobby</button>'
     }
 }
