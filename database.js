@@ -111,7 +111,7 @@ function saveGame(hunter, chicken, general, done) {
 
     pool.query(query1, (err, res) => {
         if(err) {
-            console.log(err.stack);
+            console.log(err);
             done(0);
             return;
         } else {
