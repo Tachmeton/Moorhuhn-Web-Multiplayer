@@ -518,10 +518,10 @@ class Gameboard {
         mainContent.innerHTML = '<table id="stats" class="p-2 text-white bg-primary"></table>';
 
         const statisticsDiv = document.getElementById("stats");
-        stats.innerHTML += "<tr><td>Hunter: </td><td>" + data.hunter.username + "</tr><tr><td>Shots: </td><td>" + data.hunter.shots + "</td></tr><tr><td>Hit Ratio: </td><td>" + Math.round(100 * data.hunter.hits/data.hunter.shots) / 100 + "</td></tr>";
+        stats.innerHTML += "<tr><td>Hunter: </td><td>" + data.hunter.username + "</tr><tr><td>Shots: </td><td>" + data.hunter.shots + "</td></tr><tr><td>Hit Ratio: </td><td>" + Math.round(100 * data.hunter.hits/data.hunter.shots) / 100 + "</td></tr><br>";
 
         for(let chicken in data.chicken) {
-            stats.innerHTML += "<tr><td>Chicken " + chicken + ": </td><td>" + data.chicken[chicken].username + "</td></tr><tr><td>Lifes left: </td><td>" + data.chicken[chicken].lifesLeft + "</td></tr>";
+            stats.innerHTML += "<br><tr><td>Chicken " + chicken + ": </td><td>" + data.chicken[chicken].username + "</td></tr><tr><td>Lifes left: </td><td>" + data.chicken[chicken].lifesLeft + "</td></tr>";
         }
 
         stats.innerHTML += '<br><button class="btn-sm bg-secondary text-white" id="backToLobby">zurück zur lobby</button>'
