@@ -321,13 +321,6 @@ io.on('connection', (client) => {
         console.log(e);
         client.disconnect();
     }
-<<<<<<< HEAD
-=======
-
-
-
-
->>>>>>> franz
     console.log("New Connection: " + client.id);
 
 
@@ -583,14 +576,8 @@ function cookieToJson(cookie) {
     }
 
     return returnJson;
-<<<<<<< HEAD
     
 }
-
-
-
-
-
 
 
 
@@ -777,7 +764,3 @@ function waitonLobbyFull(room, client){
     }
 }
 */
-=======
-
-}
->>>>>>> franz
