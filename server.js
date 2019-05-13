@@ -147,7 +147,7 @@ app.post("/createLobby", function(req,res) {
 
             let newRoom = {
                 id: roomnumber,
-                joinedPlayer: 1,
+                joinedPlayer: 0,
                 player: [],
                 hunter: hunter,
                 updateChicksInterval: null,
@@ -176,12 +176,14 @@ app.post("/createLobby", function(req,res) {
 function getLobbies() {
     lobbyArray = [];
 
+
     for(let lobby in rooms){
+
         let room = {
             creator: rooms[lobby].hunter.id,
-            maxPlayer: MAX_PLAYER,
-            joinedPlayers: rooms[lobby].player.length,
-            id: rooms[lobby].id
+            maxPlayers: MAX_PLAYER,
+            joinedPlayers: Object.keys(rooms[lobby].player).length + 1,
+            id: lobby
         }
 
         lobbyArray.push(room);
@@ -209,21 +211,22 @@ app.get("/getLobbies", function(req,res) {
 app.post("/joinLobby", function(req,res) {
     console.log("player wants to join lobby");
     const lobbyId = req.query.lobbyId;
-    if(lobbyId !== null) {
+    console.log("lobbyId: " + lobbyId);
+    if(lobbyId !== null && lobbyId != undefined) {
         jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
             if(err) {
                 // fehler: ungültiger token/cookie
-                console.log("");
+                console.log("Error ungueltiger token/cookie");
             } else {
                 //konnte entschlüsselt werden
                 playerId = decoded.player_id;
-                if(rooms[lobbyId] != null && decoded.playerId != null){
-                    if(rooms[room].joinedPlayer < MAX_PLAYER){
+                if(rooms[lobbyId] != null && playerId != null){
+                    if(rooms[lobbyId].joinedPlayer < MAX_PLAYER){
 
-                        ++rooms[room].joinedPlayer;
+                        ++rooms[lobbyId].joinedPlayer;
 
                         let chicken = {
-                            id: decoded.playerId,
+                            id: playerId,
                             joined: false,
                             x: Math.round(Math.random() * FeldLaengeX),
                             y: Math.round(Math.random() * FeldLaengeY),
@@ -232,7 +235,7 @@ app.post("/joinLobby", function(req,res) {
                             alive: true
                         };
 
-                        let place = rooms[lobbyId].player.length
+                        let place = rooms[lobbyId].player.length;
         
                         rooms[lobbyId].player[place] = chicken;
 
@@ -247,7 +250,13 @@ app.post("/joinLobby", function(req,res) {
                         }, 10000);
 
                         res.status(200).send();
+                    }else{
+                        console.log("Lobby is full");
                     }
+                }else{
+                    console.log("room or playerid are null");
+                    console.log(rooms[lobbyId]);
+                    console.log(playerId);
                 }
             }
         });
