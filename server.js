@@ -268,7 +268,7 @@ app.post("/joinLobby", function(req,res) {
 io.on('connection', (client) => {
 
     console.log("New Connection: " + client.id);
-
+console.log(client.handshake.headers);
     let playerId;
     try{
         const cookies = cookieToJson(client.handshake.headers.cookie);

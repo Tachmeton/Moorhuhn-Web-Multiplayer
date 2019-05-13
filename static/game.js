@@ -238,7 +238,7 @@ class Gameboard {
         }
         e = e || window.event;
 
-        const rect = c.getBoundingClientRect();
+        const rect = this.canvas.getBoundingClientRect();
         const canvasPosX = event.clientX - rect.left;
         const canvasPosY = event.clientY - rect.top;
         const virtualX = canvasPosX * (VIRTUAL_WIDTH/this.canvas.width);
