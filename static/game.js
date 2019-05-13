@@ -518,7 +518,7 @@ class Gameboard {
         mainContent.innerHTML = '<div id="stats" class="p-2 text-white bg-primary"></div>';
 
         const statisticsDiv = document.getElementById("stats");
-        stats.innerHTML += "Hunter: " + data.hunter.username + " <br>Shots: " + data.hunter.shots + "<br>Hit Ratio: " + data.hunter.hits/data.hunter.shots + "<br>";
+        stats.innerHTML += "Hunter: " + data.hunter.username + " <br>Shots: " + data.hunter.shots + "<br>Hit Ratio: " + Math.round(100 * data.hunter.hits/data.hunter.shots) / 100 + "<br>";
 
         for(let chicken in data.chicken) {
             stats.innerHTML += "<br>Chicken " + chicken + ": " + data.chicken[chicken].username + "<br>Lifes left: " + data.chicken[chicken].lifesLeft;
