@@ -529,7 +529,7 @@ function startGame(room){
 
                 let saveHunter = {
                     username: rooms[room].hunter.id,
-                    hits: rooms[room].hunter.hits,
+                    hits: rooms[room].hunter.kills,
                     shots: rooms[room].hunter.shots
                 };
 

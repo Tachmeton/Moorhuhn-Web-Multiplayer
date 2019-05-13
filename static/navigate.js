@@ -1,5 +1,9 @@
 /* eslint-disable no-multi-str */
+
+const DOMAIN = "https://chlorhuhn.rocks";
+
 let activeGame;
+
 /**
  * JS for Login:
  *  HTML from login/register loads dynamically while switching between the two
@@ -14,7 +18,7 @@ $('#login-card').on('click', '#login', function(e) {
     $('#passwordHelp').remove();
     $.ajax({
         type: "POST",
-        url: "http://localhost:3000/checkAuthentication",
+        url: DOMAIN + "/checkAuthentication",
         data: {
             "user": $('#user').val(),
             "password": $('#password').val()
@@ -49,7 +53,7 @@ $('#login-card').on('click', '#login', function(e) {
 function loadMain(done) {
     $.ajax({
         type:"GET",
-        url:"http://localhost:3000/main-container.html",
+        url:DOMAIN + "/main-container.html",
         success: function(data){
             done(data)
         },
@@ -67,7 +71,7 @@ $('#login-card').on('click', '#create-account', function(e) {
     e.preventDefault();
     $.ajax({
         type:"GET",
-        url:"http://localhost:3000/register.html",
+        url:DOMAIN + "/register.html",
         success: function(data){
             $('#login-card-body').replaceWith(data);
         },
@@ -93,7 +97,7 @@ $('#login-card').on('click', '#register', function(e) {
     }
     $.ajax({
         type: "POST",
-        url: "http://localhost:3000/registerUser",
+        url: DOMAIN + "/registerUser",
         data: {
             "user": $('#username').val(),
             "password": $('#password').val()
@@ -120,7 +124,7 @@ $('#login-card').on('click', '#return-to-login', function(e) {
     e.preventDefault();
     $.ajax({
         type:"GET",
-        url:"http://localhost:3000/login.html",
+        url: DOMAIN + "/login.html",
         success: function(data){
             $('#login-card-body').replaceWith(data);
         },
@@ -193,7 +197,7 @@ function addLobbieToUi(lobbyFree, creator, joinedPlayers, maxPlayers, id) {
 function loadLobbies(done) {
     $.ajax({
         type:"GET",
-        url:"http://localhost:3000/getLobbies",
+        url:DOMAIN + "/getLobbies",
         xhrFields: {
             withCredentials: true
         },
@@ -210,7 +214,7 @@ function loadLobbies(done) {
 $('body').on('click', '#create-lobby', function() {
     $.ajax({
         type: "POST",
-        url: "http://localhost:3000/createLobby",
+        url: DOMAIN + "/createLobby",
         xhrFields:{
             withCredentials:true
         },
@@ -245,7 +249,7 @@ function joinLobby(el) {
     const lobbyId = $(el).attr('data-gameId');
     $.ajax({
         type: "POST",
-        url: "http://localhost:3000/joinLobby",
+        url: DOMAIN + "/joinLobby",
         data: {
             "lobbyId": lobbyId
         },xhrFields: {
@@ -282,7 +286,7 @@ function joinLobby(el) {
 function loadGame(done) {
     $.ajax({
         type:"GET",
-        url:"http://localhost:3000/game.html",
+        url:DOMAIN + "/game.html",
         success: function(data,textStatus,jqXhr){
             done(data,textStatus,jqXhr);
         },
