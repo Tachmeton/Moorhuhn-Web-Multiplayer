@@ -428,7 +428,7 @@ io.on('connection', (client) => {
             let chickenWidth = 0;
             let chickenHeight = 0;
 
-            if(client.id === rooms[room].hunter.id){
+            if(client.id === rooms[room].hunter.socket_id){
 
                 if(rooms[room].hunter.bullets > 0){
 

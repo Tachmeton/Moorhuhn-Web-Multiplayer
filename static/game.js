@@ -71,7 +71,9 @@ class Gameboard {
         }
 
         // register mouse click
-        document.getElementById("game").onclick = thisSave.sendHunterShot;
+        document.getElementById("game").onclick = function(e) {
+            thisSave.sendHunterShot(e, thisSave);
+        };
 
         // register keypresses
         document.onkeydown = function(e){
@@ -178,6 +180,10 @@ class Gameboard {
         this.chicks = game.chicks;
         this.timeLeft = game.timeLeft;
 
+        if(this.myRole === 'h') {
+            $(this.canvas).css("cursor", "url('img/crosshair.png') 25 25 , auto");
+        } 
+
         this.gameInterval = setInterval(function(){
             thisSave.gameLoop();
         }, REFRESH_RATE);
@@ -250,23 +256,23 @@ class Gameboard {
         }
     }
 
-    sendHunterShot(e) {
+    sendHunterShot(e, thisSave) {
         if(this.myRole === 'c'){
             return;
         }
         e = e || window.event;
 
-        const rect = this.canvas.getBoundingClientRect();
+        const rect = thisSave.canvas.getBoundingClientRect();
         const canvasPosX = event.clientX - rect.left;
         const canvasPosY = event.clientY - rect.top;
-        const virtualX = canvasPosX * (VIRTUAL_WIDTH/this.canvas.width);
-        const virtualY = canvasPosY * (VIRTUAL_HEIGHT/this.canvas.height);
+        const virtualX = canvasPosX * (VIRTUAL_WIDTH/thisSave.canvas.width);
+        const virtualY = canvasPosY * (VIRTUAL_HEIGHT/thisSave.canvas.height);
 
 
         console.log("canvasX: %s;canvasY:%s", canvasPosX, canvasPosY);
         console.log("actual game: x-" + virtualX + ";y-" + virtualY);
 
-        this.socket.emit('hunterShot', {
+        thisSave.socket.emit('hunterShot', {
             x: virtualX,
             y: virtualY
         });
@@ -428,12 +434,13 @@ class Gameboard {
         this.ctx.textAlign = "right";
         this.ctx.textBaseline = "bottom";
 
-        const xOffset = this.ctx.measureText(HEART_SYMBOL.repeat(livesLost)).width;
+        const xOffsetLost = this.ctx.measureText(HEART_SYMBOL.repeat(livesLost)).width;
+        const xOffsetLeft = this.ctx.measureText(HEART_SYMBOL.repeat(livesLeft)).width;
 
-        this.ctx.fillText(HEART_SYMBOL.repeat(livesLost), xPos - this.drawableX(10)  , this.canvas.height);
+        this.ctx.fillText(HEART_SYMBOL.repeat(livesLost), this.canvas.width - this.drawableX(10) , this.canvas.height);
 
         this.ctx.fillStyle = "red";
-        this.ctx.fillText(HEART_SYMBOL.repeat(livesLeft), xPos - this.drawableX(10) -xOffset  , this.canvas.height);
+        this.ctx.fillText(HEART_SYMBOL.repeat(livesLeft), this.canvas.width - this.drawableX(10)- xOffsetLost , this.canvas.height);
 
 
     }
