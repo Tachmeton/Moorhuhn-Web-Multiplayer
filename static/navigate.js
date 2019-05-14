@@ -29,10 +29,11 @@ $('#login-card').on('click', '#login', function(e) {
         success: function(data,textStatus,jqXhr) {
             if(jqXhr.status === 200) {
                 console.log("redirecting to main");
-                loadMain(function(data) {
+                window.location = "https://chlorhuhn.rocks/main.html"
+                /*loadMain(function(data) {
                     $('#mainContainer').replaceWith(data);
                     showLobbies();
-                });
+                });*/
 
             } else {
                 alert("could not load main");
@@ -221,14 +222,15 @@ $('body').on('click', '#create-lobby', function() {
         },
         success: function(lobbId,textStatus,jqXhr) {
             if(jqXhr.status === 200){
-                loadGame(function(gamehtml,textStatus,jqXhr) {
+                window.location = "https://chlorhuhn.rocks/game";
+                /*loadGame(function(gamehtml,textStatus,jqXhr) {
                     if(jqXhr.status === 200) {
                         $('#mainContainer').replaceWith(gamehtml);
                         activeGame = new Gameboard();
                     } else {
                         alert("/game.html konnte nicht geladen werden");
                     }
-                });
+                });*/
             } else {
                 alert("es konnte keine neue Lobby erstellt werden");
             }
@@ -258,14 +260,15 @@ function joinLobby(el) {
         },
         success: function(data,textStatus,jqXhr) {
             if(jqXhr.status === 200) {
-                loadGame(function(data,textStatus,jqXhr) {
+                window.location = "https://chlorhuhn.rocks/game";
+                /*loadGame(function(data,textStatus,jqXhr) {
                     if(jqXhr.status === 200) {
                         $('#mainContainer').replaceWith(data);
                         activeGame = new Gameboard();
                     } else {
                         alert("/game.html konnte nicht geladen werden");
                     }
-                });
+                });*/
             } else {
                 alert("Ein Problem beim joinen der Lobby ist aufgetreten");
             };
@@ -298,5 +301,5 @@ function loadGame(done) {
 }
 
 $('body').on('click', '#backToLobby', function() {
-    window.location = "https://chlorhuhn.rocks";
+    window.location = "https://chlorhuhn.rocks/main";
 });

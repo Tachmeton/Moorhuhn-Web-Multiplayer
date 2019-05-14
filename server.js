@@ -58,13 +58,28 @@ app.get("/?", function(req, res) {
 });
 
 
-app.get("/main.html", function(req,res) {
+app.get("/main", function(req,res) {
     if(req.cookies.token) {
         jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
             if(err) {
                 res.sendFile(__dirname + "/static/index.html");
             } else {
                 res.sendFile(__dirname + "/static/main.html");
+            }
+        });
+    } else {
+        console.log("kein token gefunden");
+    }
+    res.sendFile(__dirname + "/static/index.html");
+});
+
+app.get("/game", function(req,res) {
+    if(req.cookies.token) {
+        jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
+            if(err) {
+                res.sendFile(__dirname + "/static/index.html");
+            } else {
+                res.sendFile(__dirname + "/static/game.html");
             }
         });
     } else {
