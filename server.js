@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const config = require('./config');
 const cookieParser = require('cookie-parser');
+const cookie = require('cookie');
 
 eval(fs.readFileSync('database.js')+'');
 
@@ -272,7 +273,9 @@ io.on('connection', (client) => {
     let playerId;
     let joinedLobby = null;
     try{
-        const cookies = cookieToJson(client.handshake.headers.cookie);
+        const cookies = cookie.parse(client.handshake.headers.cookie);
+	console.log("cookie:");
+	console.log(cookies.token);
         if(cookies.token !== null) {
             //Gültigkeit überprüfen:
             jwt.verify(cookies.token, config.secret, function(err, decoded) {
