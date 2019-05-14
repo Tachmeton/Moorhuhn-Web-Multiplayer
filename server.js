@@ -195,10 +195,9 @@ app.get("/getLobbies", function(req,res) {
                 }
             
                 if(playerIds.length === 0) {
-                    console.log("empty lobbies, nothing to send");
                     res.status(200).send([]);
+                    return;
                 }
-                console.log("after if");
 
                 getUsernames(playerIds, function (resp) {
                     if(resp.success) {
