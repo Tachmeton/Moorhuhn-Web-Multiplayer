@@ -149,6 +149,12 @@ function saveGame(hunter, chicken, general, done) {
     });
 }
 
+/**
+ * 
+ * @param {Array} arrayOfPlayerIds 
+ * @param {Function} done params success: boolean, map: JSON
+ *                 
+ */
 function getUsernames(arrayOfPlayerIds, done) {
     const idString = JSON.stringify(arrayOfPlayerIds)
     const sqlIdList = "(" + idString.substring(1, idString.length-1) + ")";

@@ -174,32 +174,48 @@ app.post("/createLobby", function(req,res) {
  *    -id
  */
 function getLobbies() {
-    lobbyArray = [];
 
-
-    for(let lobby in rooms){
-
-        let room = {
-            creator: rooms[lobby].hunter.id,
-            maxPlayers: MAX_PLAYER,
-            joinedPlayers: Object.keys(rooms[lobby].player).length + 1,
-            id: lobby
-        }
-
-        lobbyArray.push(room);
-    }
-
-    return lobbyArray;
 }
 
 
 app.get("/getLobbies", function(req,res) {
+    // check session
     if(req.cookies.token) {
         jwt.verify(req.cookies.token, config.secret, function(err, decoded) {
             if(err) {
                 res.status(400).send("no token sent");
             } else {
-                res.status(200).send(getLobbies());
+
+                // get lobbies
+                lobbyArray = [];
+
+                const playerIds = [];
+                for(let lobby in rooms) {
+                    playerIds.push(rooms[lobby].hunter.id);
+                }
+            
+                if(playerIds.length === 0) {
+                    res.status(200).send([]);
+                }
+
+                getUsernames(playerIds, function (resp) {
+                    if(resp.success) {
+                        for(let lobby in rooms){
+                
+                            let room = {
+                                creator: resp.map[rooms[lobby].hunter.id],
+                                maxPlayers: MAX_PLAYER,
+                                joinedPlayers: Object.keys(rooms[lobby].player).length + 1,
+                                id: lobby
+                            };
+                    
+                            lobbyArray.push(room);
+                        }
+                        res.status(200).send(lobbyArray);
+                    } else {
+                        res.status(500).send("could not get lobbies");
+                    }
+                });
             }
         });
     } else {
