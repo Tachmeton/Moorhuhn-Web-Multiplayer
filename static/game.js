@@ -96,6 +96,12 @@ class Gameboard {
             console.log("error @ establishing socket connection: " + message);
         });
 
+        this.socket.on('lobbyStatus', function(message) {
+            console.log("socket.io: sent lobbyStatus; " + message);
+            thisSave.clearCanvas(); 
+            thisSave.drawText(message);
+        });
+
         this.socket.on('startingSoon', function(countDownTime) {
             console.log("socket.io: sent starting soon");
             thisSave.startCountdown(countDownTime);

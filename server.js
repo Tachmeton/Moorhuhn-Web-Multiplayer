@@ -336,8 +336,8 @@ io.on('connection', (client) => {
                             if(rooms[joinedLobby].joinedPlayer === MAX_PLAYER && allJoined(rooms[joinedLobby]) === true){
                                 startGame(joinedLobby);
                             }else{
+                                client.emit('lobbyStatus', "Lobby status: " + rooms[joinedLobby].joinedPlayer + "/" + MAX_PLAYER + " joined the Lobby");
                                 console.log("Do not start Game");
-                                console.log(rooms[joinedLobby].joinedPlayer + " === " + MAX_PLAYER);
                                 console.log(allJoined(rooms[joinedLobby]));
                             }
                         }
@@ -538,7 +538,7 @@ function startGame(room){
     }
 
     setTimeout(function(){
-            io.to(room).emit("startingNow", {
+        io.to(room).emit("startingNow", {
             chicks: rooms[room].player,
             timeLeft: rooms[room].timeLeft
         });
