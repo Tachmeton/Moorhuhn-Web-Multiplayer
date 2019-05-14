@@ -172,21 +172,25 @@ class Gameboard {
         while(i >= 0) {
             setTimeout(function() {
                 thisSave.clearCanvas();
-                thisSave.drawText(thisSave.countdownValue);
+                thisSave.drawCountdown(thisSave);
                 --thisSave.countdownValue
             }, i * 1000);
             --i;
         }
     }
 
-    drawText(text) {
-        if(this.countdownValue >= 0){
-            this.ctx.font = Math.round(VIRTUAL_FONT_SIZE * this.canvas.height) + "px Arial";
-            this.ctx.fillStyle = "black";
-            this.ctx.textAlign = "center";
-            this.ctx.textBaseline = "middle";
-            this.ctx.fillText(text, this.canvas.width / 2 ,this.canvas.height / 2);
+    drawCountdown(thisSave) {
+        if(thisSave.countdownValue >= 0) {
+            thisSave.drawText(thisSave.countdownValue);
         }
+    }
+
+    drawText(text) {
+        this.ctx.font = Math.round(VIRTUAL_FONT_SIZE * this.canvas.height) + "px Arial";
+        this.ctx.fillStyle = "black";
+        this.ctx.textAlign = "center";
+        this.ctx.textBaseline = "middle";
+        this.ctx.fillText(text, this.canvas.width / 2 ,this.canvas.height / 2);
     }
 
     assignRole(roleData) {
