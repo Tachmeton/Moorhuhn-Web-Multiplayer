@@ -11,8 +11,8 @@ const END_SCREEN_MESSAGE = "GAME OVER";
 const HEART_SYMBOL = "♥";
 const COUNTDOWN_TIME = 5;
 const REFRESH_RATE = 30;
-const xSpeed = 50;
-const ySpeed = 50;
+const xSpeed = 200;
+const ySpeed = 200;
 
 const VIRTUAL_WIDTH  = 15000;
 const VIRTUAL_HEIGHT = 10000;

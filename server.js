@@ -12,8 +12,8 @@ eval(fs.readFileSync('database.js')+'');
 
 Error.stackTraceLimit = Infinity;
 
-const xSpeed = 50;
-const ySpeed = 50;
+const xSpeed = 200;
+const ySpeed = 200;
 const FeldLaengeX = 15000;
 const FeldLaengeY = 10000;
 
@@ -22,9 +22,9 @@ const VIRTUAL_CHICKEN_HEIGHT = 0.14;
 
 const LIVE_OF_CHICKEN = 5;
 const BULLETS = 10;
-const TIME_ONE_GAME = 10;
+const TIME_ONE_GAME = 30;
 
-const MAX_PLAYER = 2;
+const MAX_PLAYER = 3;
 
 server.listen(3000, function() {
 console.log("server now listening on port 3000");
