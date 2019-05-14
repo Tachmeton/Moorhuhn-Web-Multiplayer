@@ -69,8 +69,8 @@ app.get("/main", function(req,res) {
         });
     } else {
         console.log("kein token gefunden");
+        res.sendFile(__dirname + "/static/index.html");
     }
-    res.sendFile(__dirname + "/static/index.html");
 });
 
 app.get("/game", function(req,res) {
@@ -84,8 +84,8 @@ app.get("/game", function(req,res) {
         });
     } else {
         console.log("kein token gefunden");
+        res.sendFile(__dirname + "/static/index.html");
     }
-    res.sendFile(__dirname + "/static/index.html");
 });
 
 app.use(express.static("static"));
