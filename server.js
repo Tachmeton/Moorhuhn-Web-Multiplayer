@@ -291,8 +291,6 @@ io.on('connection', (client) => {
     let joinedLobby = null;
     try{
         const cookies = cookie.parse(client.handshake.headers.cookie);
-	console.log("cookie:");
-	console.log(cookies.token);
         if(cookies.token !== null) {
             //Gültigkeit überprüfen:
             jwt.verify(cookies.token, config.secret, function(err, decoded) {
@@ -334,10 +332,11 @@ io.on('connection', (client) => {
                             console.log(playerId + " could not join Lobby on 2nd join!");
                             client.disconnect();
                         }else{
+                            // is lobby full? => start game; else => update lobbyStatus
                             if(rooms[joinedLobby].joinedPlayer === MAX_PLAYER && allJoined(rooms[joinedLobby]) === true){
                                 startGame(joinedLobby);
                             }else{
-                                io.to(rooms[joinedLobby]).emit('lobbyStatus', "Lobby status: " + rooms[joinedLobby].joinedPlayer + "/" + MAX_PLAYER + " joined the Lobby");
+                                io.to(rooms[lobby].id).emit('lobbyStatus', "Lobby status: " + rooms[joinedLobby].joinedPlayer + "/" + MAX_PLAYER + " joined the Lobby");
                                 console.log("Do not start Game");
                                 console.log(allJoined(rooms[joinedLobby]));
                             }
