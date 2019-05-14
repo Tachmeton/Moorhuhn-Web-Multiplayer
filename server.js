@@ -25,7 +25,7 @@ const LIVE_OF_CHICKEN = 5;
 const BULLETS = 10;
 const TIME_ONE_GAME = 30;
 
-const MAX_PLAYER = 3;
+const MAX_PLAYER = 8;
 
 server.listen(3000, function() {
 console.log("server now listening on port 3000");
