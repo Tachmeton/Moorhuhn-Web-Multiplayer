@@ -537,3 +537,5 @@ class Gameboard {
         stats.innerHTML += '<br><button class="btn-sm bg-secondary text-white" id="backToLobby">zurück zur lobby</button>'
     }
 }
+
+const activteGame = new Gameboard();
