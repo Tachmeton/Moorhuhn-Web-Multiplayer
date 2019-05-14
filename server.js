@@ -245,7 +245,7 @@ app.post("/joinLobby", function(req,res) {
                                 delete rooms[lobbyId].player[place];
                                 console.log(playerId + " has been removed cause no follow up join");
                             }
-                        }, 10000);
+                        }, 2000);
 
                         res.status(200).send();
                     }else{
@@ -279,6 +279,8 @@ io.on('connection', (client) => {
                 if(err) {
                     // fehler: ungültiger token/cookie
                     console.log("ein fehler beim entschlüsseln des jwt ist aufgetreten");
+
+                    client.disconnect();
                 } else {
                     //konnte entschlüsselt werden
                     playerId = decoded.player_id;
