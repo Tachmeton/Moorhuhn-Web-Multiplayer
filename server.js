@@ -336,7 +336,7 @@ io.on('connection', (client) => {
                             if(rooms[joinedLobby].joinedPlayer === MAX_PLAYER && allJoined(rooms[joinedLobby]) === true){
                                 startGame(joinedLobby);
                             }else{
-                                io.to(rooms[lobby].id).emit('lobbyStatus', "Lobby status: " + rooms[joinedLobby].joinedPlayer + "/" + MAX_PLAYER + " joined the Lobby");
+                                io.to(rooms[joinedLobby].id).emit('lobbyStatus', "Lobby status: " + rooms[joinedLobby].joinedPlayer + "/" + MAX_PLAYER + " joined the Lobby");
                                 console.log("Do not start Game");
                                 console.log(allJoined(rooms[joinedLobby]));
                             }
