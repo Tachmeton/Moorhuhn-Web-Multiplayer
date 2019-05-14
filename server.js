@@ -468,6 +468,8 @@ io.on('connection', (client) => {
                     --rooms[room].hunter.bullets;
                     ++rooms[room].hunter.shots;
 
+                    io.to(room).emit('crosshairPosition', {x:coordinates.x, y:coordinates.y});
+
                     for(let playerkey in rooms[room].player){
 
                         if(rooms[room].player[playerkey].direction == 'w' || rooms[room].player[playerkey].direction == 'e'){
