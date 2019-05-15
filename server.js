@@ -208,7 +208,7 @@ app.get("/getLobbies", function(req,res) {
                 for(let lobby in rooms) {
                     playerIds.push(rooms[lobby].hunter.id);
                 }
-            
+
                 if(playerIds.length === 0) {
                     res.status(200).send([]);
                     return;
@@ -217,14 +217,14 @@ app.get("/getLobbies", function(req,res) {
                 getUsernames(playerIds, function (resp) {
                     if(resp.success) {
                         for(let lobby in rooms){
-                
+
                             let room = {
                                 creator: resp.map[rooms[lobby].hunter.id],
                                 maxPlayers: MAX_PLAYER,
                                 joinedPlayers: Object.keys(rooms[lobby].player).length + 1,
                                 id: lobby
                             };
-                    
+
                             lobbyArray.push(room);
                         }
                         res.status(200).send(lobbyArray);
@@ -267,11 +267,11 @@ app.post("/joinLobby", function(req,res) {
                         };
 
                         let place = rooms[lobbyId].player.length;
-        
+
                         rooms[lobbyId].player[place] = chicken;
 
                         console.log("player: " + playerId + " first lobby join worked");
-                        
+
                         //if player does not join -->kick it from lobby
                         setTimeout(function(){
                             if(rooms[lobbyId].player[place].joined === false){
@@ -283,11 +283,13 @@ app.post("/joinLobby", function(req,res) {
                         res.status(200).send();
                     }else{
                         console.log("Lobby is full");
+                        res.status(403).send();
                     }
                 }else{
                     console.log("room or playerid are null");
                     console.log(rooms[lobbyId]);
                     console.log(playerId);
+                    res.send(400).send();
                 }
             }
         });
@@ -381,7 +383,7 @@ io.on('connection', (client) => {
                 if(rooms[lobby].syncChicksInterval != null){
                     if(rooms[lobby].player.length > 0){
                         let lastJoined = rooms[lobby].player.length - 1;
-    
+
                         let newHunter = {
                                 id: rooms[lobby].player[lastJoined].id,
                                 socket_id: rooms[lobby].player[lastJoined].socket_id,
@@ -494,7 +496,7 @@ io.on('connection', (client) => {
 
                             if(rooms[room].player[playerkey].lives > 0){
                                 setTimeout(function(){
-                                    
+
                                     rooms[room].player[playerkey].x = calculateNewXCoordinate();
                                     rooms[room].player[playerkey].y = calculateNewYCoordinate();
                                     rooms[room].player[playerkey].alive = true;
@@ -509,7 +511,7 @@ io.on('connection', (client) => {
                                 }, 2000);
                             }else{
                                 console.log("Room " + room + ": " + "Chicken " + rooms[room].player[playerkey].id + " died and has no lives anymore!");
-                                
+
                             }
                         }else{
                             console.log("No hit!");
@@ -527,7 +529,7 @@ io.on('connection', (client) => {
 
         console.log("hunter wants to reload");
         let room = Object.keys(client.rooms).filter(item => item!=client.id);
-    
+
             if(room != undefined && room != null){
                 if(client.id === rooms[room].hunter.socket_id){
                     rooms[room].hunter.bullets = BULLETS;
@@ -587,23 +589,23 @@ function startGame(room){
                             hits: rooms[room].hunter.kills,
                             shots: rooms[room].hunter.shots
                         };
-        
+
                         let saveChicken = [];
-        
+
                         for(playerkey in rooms[room].player){
                             let chicken = {
                                 username: idToNameMap[rooms[room].player[playerkey].id] ,
                                 id: rooms[room].player[playerkey].id,
                                 lifesLeft: rooms[room].player[playerkey].lives
                             };
-        
+
                             saveChicken.push(chicken);
                         }
-        
+
                         saveGeneral = {
                             duration: TIME_ONE_GAME
                         };
-        
+
                         let writeToDatabase = saveGame(saveHunter, saveChicken, saveGeneral, function(success) {
                             if(success) {
                                 console.log("Room " + room + ": " + "Write to Database worked!");
@@ -611,13 +613,13 @@ function startGame(room){
                                 console.log("Room " + room + ": " + "Write to Database did not work!");
                             }
                         });
-        
+
                         let endGameObject = {
                             hunter: saveHunter,
                             chicken: saveChicken,
                             general: saveGeneral
                         }
-        
+
                         console.log("send end of game emit");
                         io.to(room).emit("endOfGame", endGameObject);
                         console.log("nach send end of game emit");
@@ -626,16 +628,16 @@ function startGame(room){
                             if(io.sockets.connected[rooms[room].hunter.socket_id] != null){
                                 io.sockets.connected[rooms[room].hunter.socket_id].leave(room);
                             }
-                            
+
                             console.log("timeout chicken");
-        
+
                             for(let playerkey in rooms[room].player){
                                 if(io.sockets.connected[rooms[room].player[playerkey].socket_id] != null){
                                     io.sockets.connected[rooms[room].player[playerkey].socket_id].leave(room);
                                 }
                             }
-        
-        
+
+
                             delete rooms[room];
                         }, 5000);
                     } else {
@@ -703,7 +705,7 @@ function cookieToJson(cookie) {
     }
 
     return returnJson;
-    
+
 }
 
 
@@ -729,7 +731,7 @@ function createRoomNumber() {
 
 function allJoined(lobby){
     let allJoined = true;
-    
+
     if(lobby != null){
         if(lobby.hunter.joined == true){
             for(let player of lobby.player){
@@ -854,9 +856,9 @@ client.on('joinRoom', (room) => {
     }
 
     });
-    
-    
-    
+
+
+
     function roomFull(room){
 
     let roomState = 0;
